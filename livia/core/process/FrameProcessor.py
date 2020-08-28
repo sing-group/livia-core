@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 
 from numpy import ndarray
 
-from livia.core.FrameInput import FrameInput
-from livia.core.FrameOutput import FrameOutput
+from livia.core.input.FrameInput import FrameInput
+from livia.core.output.FrameOutput import FrameOutput
 
 
 class FrameProcessor(ABC):

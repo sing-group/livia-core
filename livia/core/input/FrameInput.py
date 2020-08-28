@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 
-from numpy import ndarray
-
 from cv2 import CAP_PROP_FPS
+from numpy import ndarray
 
 
 class FrameInput(ABC):
