@@ -1,19 +1,9 @@
 import cv2
-import numpy
+from cv2.cv2 import VideoCapture
 
-from livia.core.input.FrameInput import FrameInput
+from livia.core.input.OpenCVFrameInput import OpenCVFrameInput
 
 
-class WebCamFrameInput(FrameInput):
-
-    def __init__(self):
-        super().__init__()
-        self.cap = cv2.VideoCapture(0)
-        ret, frame = self.cap.read()
-        self.y_frame = frame.shape[0]
-        self.x_frame = frame.shape[1]
-
-    def next_frame(self) -> numpy.ndarray:
-        if self.cap.isOpened():
-            ret, frame = self.cap.read()
-            return frame
+class WebCamFrameInput(OpenCVFrameInput):
+    def __init__(self, webcam_index=0) -> VideoCapture:
+        super().__init__(cv2.VideoCapture(webcam_index))

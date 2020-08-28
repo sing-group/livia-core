@@ -1,27 +1,36 @@
 import time
 
-import cv2
+from cv2 import CAP_PROP_FPS
+from cv2.cv2 import VideoCapture
+from numpy import ndarray
 
-from livia.core.input.FrameInput import FrameInput
+from livia.core.input.OpenCVFrameInput import OpenCVFrameInput
 
 
-class FileFrameInput(FrameInput):
-    def __init__(self, path):
-        super().__init__()
-        self.delay = 0.04
-        self.cap = cv2.VideoCapture(path)
-        ret, frame = self.cap.read()
-        if frame is None:
-            raise ValueError("Selected input file does not exists: " + path)
-        self.y_frame = frame.shape[0]
-        self.x_frame = frame.shape[1]
+class FileFrameInput(OpenCVFrameInput):
+    def __init__(self, path: str, delay: int = None):
+        super().__init__(VideoCapture(path))
 
-        self.delay = 1 / self.cap.get(cv2.CAP_PROP_FPS)
+        if delay is None:
+            try:
+                self.__delay = 1 / self._capture.get(CAP_PROP_FPS)
+            except AttributeError:
+                self.__delay = 0.04
+        else:
+            self.__delay = delay
 
-    def next_frame(self):
-        if self.cap.isOpened():
-            ret, frame = self.cap.read()
-            time.sleep(self.delay)
+        self.__last_frame_time = 0
+
+    def next_frame(self) -> ndarray:
+        if self._capture.isOpened():
+            ret, frame = self._capture.read()
+
+            elapsed = time.time() - self.__last_frame_time
+
+            if elapsed < self.__delay:
+                time.sleep(self.__delay - elapsed)
+
+            self.__last_frame_time = time.time()
             if ret is False:
                 return None
             else:

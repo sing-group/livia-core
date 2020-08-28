@@ -22,7 +22,7 @@ class FrameProcessor(ABC):
 
     def stop(self):
         self.running = False
-        self.input.close_source()
+        self.input.close()
         self.output.close_output()
 
     def process_frame(self, frame):
