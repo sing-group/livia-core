@@ -23,7 +23,7 @@ class FrameProcessor(ABC):
     def stop(self):
         self.running = False
         self.input.close()
-        self.output.close_output()
+        self.output.close()
 
     def process_frame(self, frame):
         if frame is not None:

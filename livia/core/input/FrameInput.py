@@ -13,13 +13,11 @@ class FrameInput(ABC):
         pass
 
     @abstractmethod
-    def close(self):
-        pass
-
-    @abstractmethod
     def get_fps(self) -> int:
         pass
 
-    @abstractmethod
-    def get_frame_size(self) -> int:
-        return self.x_frame, self.y_frame
+    def get_frame_size(self) -> (int, int):
+        return self.__x_frame, self.__y_frame
+
+    def close(self):
+        pass

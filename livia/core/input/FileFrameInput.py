@@ -15,7 +15,7 @@ class FileFrameInput(OpenCVFrameInput):
             try:
                 self.__delay = 1 / self._capture.get(CAP_PROP_FPS)
             except AttributeError:
-                self.__delay = 0.04
+                self.__delay = 1 / 25
         else:
             self.__delay = delay
 

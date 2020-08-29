@@ -1,22 +1,18 @@
-import numpy
+from numpy import ndarray
 
 from livia.core.output.FrameOutput import FrameOutput
 
 
 class CompositeFrameOutput(FrameOutput):
-    def __init__(self, *outs):
+    def __init__(self, first_output: FrameOutput, second_output: FrameOutput, *args: FrameOutput):
         super().__init__()
 
-        self.frame_outputs = []
+        self.__outputs = [first_output, second_output, *args]
 
-        for out in outs:
-            if isinstance(out, FrameOutput):
-                self.frame_outputs.append(out)
+    def show_frame(self, frame: ndarray):
+        for output in self.__outputs:
+            output.show_frame(frame)
 
-    def show_frame(self, frame: numpy.ndarray):
-        for out in self.frame_outputs:
-            out.show_frame(frame)
-
-    def close_output(self):
-        for out in self.frame_outputs:
-            out.close_output()
+    def close(self):
+        for output in self.__outputs:
+            output.close()
