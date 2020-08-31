@@ -5,5 +5,5 @@ from numpy import ndarray
 
 class FrameModification(ABC):
     @abstractmethod
-    def modify(self, frame: ndarray, *args) -> ndarray:
-        pass
+    def modify(self, num_frame: int, frame: ndarray) -> ndarray:
+        raise NotImplementedError
