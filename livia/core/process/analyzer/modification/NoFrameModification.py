@@ -4,5 +4,5 @@ from livia.core.process.analyzer.modification.FrameModification import FrameModi
 
 
 class NoFrameModification(FrameModification):
-    def modify(self, num_frame: int, frame: ndarray, *args) -> ndarray:
+    def modify(self, num_frame: int, frame: ndarray) -> ndarray:
         return frame

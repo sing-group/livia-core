@@ -8,7 +8,9 @@ class FileFrameOutput(FrameOutput):
     def __init__(self, path: str, fps: float = 30.0, width: int = 640, height: int = 480):
         super().__init__()
 
-        self.__output = VideoWriter(path, VideoWriter_fourcc(*"XVID"), fps, (width, height))
+        fourcc = "mp4v" if "mp4" in path else "XVID"
+
+        self.__output = VideoWriter(path, VideoWriter_fourcc(*fourcc), fps, (width, height))
 
     def show_frame(self, frame: ndarray):
         self.__output.write(frame)
