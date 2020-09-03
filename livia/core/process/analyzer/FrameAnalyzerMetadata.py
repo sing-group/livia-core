@@ -1,4 +1,5 @@
 import functools
+import inspect
 
 from livia.core.process.analyzer.FrameAnalyzer import FrameAnalyzer
 
@@ -11,6 +12,16 @@ class FrameAnalyzerMetadata:
         functools.update_wrapper(self, analyzer_class)
         self.__analyzer_class = analyzer_class
         self.__name = name
+
+        self.__properties = inspect.getmembers(
+            analyzer_class,
+            lambda m: isinstance(m, property)
+                      and m.fget is not None
+                      and hasattr(m.fget, "is_frame_analyzer_property")
+                      and m.fget.is_frame_analyzer_property)
+
+        for name, prop in self.__properties:
+            del prop.fget.is_frame_analyzer_property
 
         # This import must be done here to avoid cross import
         from livia.core.process.analyzer.FrameAnalyzerManager import FrameAnalyzerManager
@@ -27,8 +38,12 @@ class FrameAnalyzerMetadata:
     def name(self) -> str:
         return self.__name
 
+    @property
+    def properties(self) -> {str, property}:
+        return self.__properties
 
-def frame_analyzer(cls=None, *, name: str = "no name"):
+
+def frame_analyzer(cls=None, *, name: str = "<No name>"):
     if cls:
         return FrameAnalyzerMetadata(cls)
     else:
@@ -37,3 +52,10 @@ def frame_analyzer(cls=None, *, name: str = "no name"):
             return FrameAnalyzerMetadata(clazz, name=name)
 
         return wrapper
+
+
+def frame_analyzer_property(func):
+    func.is_frame_analyzer_property = True
+
+    return property(func)
+
