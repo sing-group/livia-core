@@ -17,3 +17,11 @@ class CompositeFrameAnalyzer(FrameAnalyzer):
     @abstractmethod
     def _composite_analyze(self, frame: ndarray, modification: FrameModification) -> FrameModification:
         pass
+
+    @property
+    def child(self) -> FrameAnalyzer:
+        return self._child
+
+    @child.setter
+    def child(self, child: FrameAnalyzer):
+        self._child = child

@@ -30,6 +30,12 @@ class FrameAnalyzerMetadata:
     def __call__(self, *args, **kwargs):
         return self.__analyzer_class(*args, **kwargs)
 
+    def __instancecheck__(self, other):
+        if isinstance(other, FrameAnalyzer):
+            return isinstance(other, self.__analyzer_class)
+        else:
+            return isinstance(other, self.__class__)
+
     @property
     def analyzer_class(self):
         return self.__analyzer_class
