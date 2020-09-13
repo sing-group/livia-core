@@ -7,5 +7,5 @@ from livia.core.process.analyzer.modification.FrameModification import FrameModi
 
 class FrameAnalyzer(ABC):
     @abstractmethod
-    def analyze(self, frame: ndarray) -> FrameModification:
+    def analyze(self, num_frame: int, frame: ndarray) -> FrameModification:
         pass

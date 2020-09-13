@@ -15,4 +15,4 @@ class CompositeFrameModification(FrameModification):
 
     @abstractmethod
     def _composite_modify(self, num_frame: int, frame: ndarray) -> ndarray:
-        raise NotImplementedError
+        raise NotImplementedError()

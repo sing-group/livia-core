@@ -9,13 +9,14 @@ from livia.core.process.analyzer.modification.FrameModification import FrameModi
 
 class CompositeFrameAnalyzer(FrameAnalyzer):
     def __init__(self, child: FrameAnalyzer = NoChangeFrameAnalyzer()):
-        self._child = child
+        self._child: FrameAnalyzer = child
 
-    def analyze(self, frame: ndarray) -> FrameModification:
-        return self._composite_analyze(frame, self._child.analyze(frame))
+    def analyze(self, num_frame: int, frame: ndarray) -> FrameModification:
+        return self._composite_analyze(num_frame, frame, self._child.analyze(num_frame, frame))
 
     @abstractmethod
-    def _composite_analyze(self, frame: ndarray, modification: FrameModification) -> FrameModification:
+    def _composite_analyze(self, num_frame: int, frame: ndarray,
+                           child_modification: FrameModification) -> FrameModification:
         pass
 
     @property

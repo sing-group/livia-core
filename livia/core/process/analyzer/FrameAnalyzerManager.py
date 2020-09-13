@@ -1,5 +1,7 @@
 import os
 import pkgutil
+from importlib import import_module
+from typing import List
 
 from livia.core.process.analyzer.FrameAnalyzer import FrameAnalyzer
 from livia.core.process.analyzer.FrameAnalyzerMetadata import FrameAnalyzerMetadata
@@ -13,7 +15,7 @@ class FrameAnalyzerManager:
         FrameAnalyzerManager.__analyzers.append(frame_analyzer_metadata)
 
     @staticmethod
-    def list_analyzers() -> [FrameAnalyzerMetadata]:
+    def list_analyzers() -> List[FrameAnalyzerMetadata]:
         return FrameAnalyzerManager.__analyzers.copy()
 
     @staticmethod
@@ -33,6 +35,6 @@ class FrameAnalyzerManager:
 
     @staticmethod
     def load_module(module):
-        for module_loader, name, ispkg in pkgutil.iter_modules([os.path.dirname(module.__file__)]):
-            if not ispkg:
-                module_loader.find_module(name).load_module(name)
+        for module_loader, name, is_package in pkgutil.iter_modules([os.path.dirname(module.__file__)]):
+            if not is_package:
+                import_module(f"{module.__name__}.{name}")
