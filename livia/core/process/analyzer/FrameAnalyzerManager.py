@@ -1,3 +1,4 @@
+import logging
 import os
 import pkgutil
 from importlib import import_module
@@ -6,12 +7,15 @@ from typing import List
 from livia.core.process.analyzer.FrameAnalyzer import FrameAnalyzer
 from livia.core.process.analyzer.FrameAnalyzerMetadata import FrameAnalyzerMetadata
 
+LOGGER = logging.getLogger()
+
 
 class FrameAnalyzerManager:
     __analyzers = []
 
     @staticmethod
     def register_analyzer(frame_analyzer_metadata: FrameAnalyzerMetadata):
+        LOGGER.debug(f"Registering frame analyzer metadata: {frame_analyzer_metadata}")
         FrameAnalyzerManager.__analyzers.append(frame_analyzer_metadata)
 
     @staticmethod
