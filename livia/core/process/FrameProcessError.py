@@ -1,0 +1,2 @@
+class FrameProcessError(Exception):
+    pass
