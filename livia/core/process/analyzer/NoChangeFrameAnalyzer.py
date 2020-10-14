@@ -6,7 +6,7 @@ from livia.core.process.analyzer.modification.FrameModification import FrameModi
 from livia.core.process.analyzer.modification.NoFrameModification import NoFrameModification
 
 
-@frame_analyzer(name="No change")
+@frame_analyzer(id="no-change", name="No change")
 class NoChangeFrameAnalyzer(FrameAnalyzer):
     __instance = None
 

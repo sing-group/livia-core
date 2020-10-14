@@ -1,4 +1,3 @@
-
 class ProcessChangeEvent:
     def __init__(self, processor, num_frame: int):
         self.__processor = processor

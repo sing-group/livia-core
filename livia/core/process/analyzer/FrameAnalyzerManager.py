@@ -1,13 +1,11 @@
-import logging
 import os
 import pkgutil
 from importlib import import_module
-from typing import List
+from typing import List, Dict
 
+from livia.core import LIVIA_LOGGER
 from livia.core.process.analyzer.FrameAnalyzer import FrameAnalyzer
 from livia.core.process.analyzer.FrameAnalyzerMetadata import FrameAnalyzerMetadata
-
-LOGGER = logging.getLogger()
 
 
 class FrameAnalyzerManager:
@@ -15,7 +13,7 @@ class FrameAnalyzerManager:
 
     @staticmethod
     def register_analyzer(frame_analyzer_metadata: FrameAnalyzerMetadata):
-        LOGGER.debug(f"Registering frame analyzer metadata: {frame_analyzer_metadata}")
+        LIVIA_LOGGER.debug(f"Registering frame analyzer metadata: {frame_analyzer_metadata}")
         FrameAnalyzerManager.__analyzers.append(frame_analyzer_metadata)
 
     @staticmethod
@@ -23,22 +21,41 @@ class FrameAnalyzerManager:
         return FrameAnalyzerManager.__analyzers.copy()
 
     @staticmethod
-    def get_metadata_for(class_or_object) -> FrameAnalyzerMetadata:
-        if isinstance(class_or_object, FrameAnalyzerMetadata):
-            analyzer_class = class_or_object.analyzer_class
-        elif isinstance(class_or_object, FrameAnalyzer):
-            analyzer_class = class_or_object.__class__
+    def get_metadata_for(class_instance_or_name) -> FrameAnalyzerMetadata:
+        if isinstance(class_instance_or_name, FrameAnalyzerMetadata):
+            analyzer_class = class_instance_or_name.analyzer_class
+        elif isinstance(class_instance_or_name, FrameAnalyzer):
+            analyzer_class = class_instance_or_name.__class__
         else:
-            analyzer_class = class_or_object
+            analyzer_class = class_instance_or_name
 
-        for analyzer in FrameAnalyzerManager.list_analyzers():
-            if analyzer.analyzer_class == analyzer_class:
-                return analyzer
+        if isinstance(analyzer_class, str):
+            for analyzer in FrameAnalyzerManager.list_analyzers():
+                if analyzer_class == analyzer.analyzer_class.__module__ \
+                    or analyzer.analyzer_class.__qualname__ == analyzer_class:
+                    return analyzer
+        else:
+            for analyzer in FrameAnalyzerManager.list_analyzers():
+                if analyzer.analyzer_class == analyzer_class:
+                    return analyzer
 
-        raise ValueError(f"No analyzer found for class or object: {class_or_object}")
+        raise ValueError(f"No analyzer found for class or object: {class_instance_or_name}")
 
     @staticmethod
     def load_module(module):
         for module_loader, name, is_package in pkgutil.iter_modules([os.path.dirname(module.__file__)]):
             if not is_package:
                 import_module(f"{module.__name__}.{name}")
+
+    @staticmethod
+    def build_analyzer(args: Dict[str, str]) -> FrameAnalyzer:
+        metadata = FrameAnalyzerManager.get_metadata_for(args["analyzer"])
+
+        analyzer_class = metadata.analyzer_class
+        analyzer = analyzer_class()
+
+        for prop in metadata.properties:
+            if prop.name in args:
+                setattr(analyzer, prop.name, args[prop.name])
+
+        return analyzer

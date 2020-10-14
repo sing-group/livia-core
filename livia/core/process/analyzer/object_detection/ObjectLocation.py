@@ -50,7 +50,7 @@ class ObjectLocation:
     def adjust_coords(self,
                       x_adjustment: lambda x: float = lambda x: x,
                       y_adjustment: lambda y: float = lambda y: y) -> (int, int):
-        return int(x_adjustment(self.__x0)), int(y_adjustment(self.__y0)),\
+        return int(x_adjustment(self.__x0)), int(y_adjustment(self.__y0)), \
                int(x_adjustment(self.__x1)), int(y_adjustment(self.__y1))
 
     def calculate_iou(self, location: "ObjectLocation") -> float:

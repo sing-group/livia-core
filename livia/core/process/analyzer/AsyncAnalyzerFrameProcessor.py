@@ -5,7 +5,7 @@ from numpy import ndarray
 
 from livia.core.input.FrameInput import FrameInput
 from livia.core.output.FrameOutput import FrameOutput
-from livia.core.process.AnalyzerFrameProcessor import AnalyzerFrameProcessor
+from livia.core.process.analyzer.AnalyzerFrameProcessor import AnalyzerFrameProcessor
 from livia.core.process.analyzer.FrameAnalyzer import FrameAnalyzer
 from livia.core.process.analyzer.modification.FrameModification import FrameModification
 

@@ -29,6 +29,6 @@ def del_livia_property_attrs(prop):
 
 
 def is_livia_property(prop) -> bool:
-    return isinstance(prop, property)\
-           and prop.fget is not None\
+    return isinstance(prop, property) \
+           and prop.fget is not None \
            and hasattr(prop.fget, __LIVIA_METADATA_ATTRIBUTE)

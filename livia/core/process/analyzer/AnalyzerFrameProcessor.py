@@ -1,9 +1,9 @@
 from numpy import ndarray
 
+from livia.core.process.analyzer.FrameAnalyzer import FrameAnalyzer
 from livia.core.input.FrameInput import FrameInput
 from livia.core.output.FrameOutput import FrameOutput
 from livia.core.process.FrameProcessor import FrameProcessor
-from livia.core.process.analyzer.FrameAnalyzer import FrameAnalyzer
 
 
 class AnalyzerFrameProcessor(FrameProcessor):

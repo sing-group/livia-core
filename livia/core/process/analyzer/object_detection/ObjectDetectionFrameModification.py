@@ -6,9 +6,9 @@ from numpy import ndarray
 from livia.core.process.analyzer.modification.CompositeFrameModification import CompositeFrameModification
 from livia.core.process.analyzer.modification.FrameModification import FrameModification
 from livia.core.process.analyzer.modification.NoFrameModification import NoFrameModification
-from livia.core.process.analyzer.object_detection.DetectedObject import DetectedObject
-from livia.core.process.analyzer.object_detection import FrameObjectDetection
 from livia.core.process.analyzer.object_detection import DEFAULT_BOX_COLOR
+from livia.core.process.analyzer.object_detection import FrameObjectDetection
+from livia.core.process.analyzer.object_detection.DetectedObject import DetectedObject
 
 
 class ObjectDetectionFrameModification(CompositeFrameModification):

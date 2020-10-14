@@ -99,7 +99,7 @@ class FrameProcessor(ABC):
             self.process_frame(num_frame, frame)
 
         for listener in self._process_change_listeners:
-            listener.finished(ProcessChangeEvent(self, num_frame))
+            listener.finished(ProcessChangeEvent(self, self._num_frame - 1))
 
     def pause(self):
         with self._running_condition:

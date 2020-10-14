@@ -1,6 +1,6 @@
-from livia.core.livia_property import livia_property
 from numpy import ndarray
 
+from livia.core.livia_property import livia_property
 from livia.core.process.analyzer.CompositeFrameAnalyzer import CompositeFrameAnalyzer
 from livia.core.process.analyzer.FrameAnalyzer import FrameAnalyzer
 from livia.core.process.analyzer.FrameAnalyzerMetadata import frame_analyzer
@@ -15,7 +15,7 @@ Y_STEP = 5
 BOX_SIZE = 50
 
 
-@frame_analyzer(name="Frame by frame square")
+@frame_analyzer(id="square", name="Frame by frame square")
 class FrameByFrameSquareFrameAnalyzer(CompositeFrameAnalyzer):
     def __init__(self, x_step: int = X_STEP, y_step: int = Y_STEP, box_size: int = BOX_SIZE,
                  box_thickness: int = DEFAULT_BOX_THICKNESS, box_color: (int, int, int) = DEFAULT_BOX_COLOR,
@@ -31,8 +31,9 @@ class FrameByFrameSquareFrameAnalyzer(CompositeFrameAnalyzer):
         self.__box_size: int = box_size
         self.__box_color: (int, int, int) = box_color
 
-    @livia_property
+    @livia_property(id="box-color", name="Box color")
     def box_color(self) -> (int, int, int):
+        """The color of the box painted"""
         return self.__box_color
 
     @box_color.setter
