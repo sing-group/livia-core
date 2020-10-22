@@ -45,8 +45,9 @@ class FrameProcessor(ABC):
             old_input = self._input
             self._input = input
 
+            event = IOChangeEvent(self, self._input, old_input)
             for listener in self._io_change_listeners:
-                listener.input_changed(IOChangeEvent(self, self._input, old_input))
+                listener.input_changed(event)
 
     @property
     def output(self) -> FrameOutput:
@@ -58,8 +59,9 @@ class FrameProcessor(ABC):
             old_output = self._output
             self._output = output
 
+            event = IOChangeEvent(self, self._output, old_output)
             for listener in self._io_change_listeners:
-                listener.output_changed(IOChangeEvent(self, self._output, old_output))
+                listener.output_changed(event)
 
     def is_alive(self) -> bool:
         with self._running_condition:
@@ -106,8 +108,9 @@ class FrameProcessor(ABC):
             if self._alive and self._play_thread.is_alive():
                 self._paused = True
 
+                event = ProcessChangeEvent(self, self._num_frame)
                 for listener in self._process_change_listeners:
-                    listener.paused(ProcessChangeEvent(self, self._num_frame))
+                    listener.paused(event)
             else:
                 raise FrameProcessError("Process is not running")
 
@@ -117,8 +120,9 @@ class FrameProcessor(ABC):
                 self._paused = False
                 self._running_condition.notify()
 
+                event = ProcessChangeEvent(self, self._num_frame)
                 for listener in self._process_change_listeners:
-                    listener.resumed(ProcessChangeEvent(self, self._num_frame))
+                    listener.resumed(event)
             else:
                 raise FrameProcessError("Process is not paused")
 
@@ -132,8 +136,10 @@ class FrameProcessor(ABC):
                 self._play_thread = Thread(target=self._play, daemon=self._daemon, name="Frame Processor Play Thread")
                 self._play_thread.start()
                 self._on_start()
+
+                event = ProcessChangeEvent(self, self._num_frame)
                 for listener in self._process_change_listeners:
-                    listener.started(ProcessChangeEvent(self, self._num_frame))
+                    listener.started(event)
 
     def _on_start(self):
         pass
@@ -145,8 +151,10 @@ class FrameProcessor(ABC):
                 self._alive = False
                 self._running_condition.notify()  # Awake if paused
                 self._on_stop()
+
+                event = ProcessChangeEvent(self, self._num_frame)
                 for listener in self._process_change_listeners:
-                    listener.stopped(ProcessChangeEvent(self, self._num_frame))
+                    listener.stopped(event)
             else:
                 raise FrameProcessError("Process is not running")
 

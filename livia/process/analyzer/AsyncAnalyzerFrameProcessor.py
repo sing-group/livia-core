@@ -18,9 +18,16 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
 
         self._current_frame: Optional[(int, ndarray)] = None
 
+        self._frame_analyzer_lock: Lock = Lock()
         self._current_modification: Optional[FrameModification] = None
         self._current_modification_lock: Lock = Lock()
         self._modification_condition: Condition = Condition(lock=Lock())
+
+    @AnalyzerFrameProcessor.frame_analyzer.setter
+    def frame_analyzer(self, frame_analyzer: FrameAnalyzer) -> FrameAnalyzer:
+        if self._frame_analyzer != frame_analyzer:
+            with self._frame_analyzer_lock:
+                super().frame_analyzer = frame_analyzer
 
     def process_frame(self, num_frame: int, frame: ndarray):
         with self._modification_condition:
@@ -57,7 +64,8 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
             with self._modification_condition:
                 self._modification_condition.wait()
                 if self._alive:
-                    modification = self._frame_analyzer.analyze(*self._current_frame)
+                    with self._frame_analyzer_lock:
+                        modification = self._frame_analyzer.analyze(*self._current_frame)
                 else:
                     break
 
