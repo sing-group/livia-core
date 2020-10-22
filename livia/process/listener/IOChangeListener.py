@@ -1,4 +1,4 @@
-from livia.process.listener import IOChangeEvent
+from livia.process.listener.IOChangeEvent import IOChangeEvent
 
 
 class IOChangeListener:
