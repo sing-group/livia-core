@@ -1,23 +1,21 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from numpy import ndarray
 
 
 class FrameInput(ABC):
-    def __init__(self):
-        self.__x_frame = self.__y_frame = 0
-        self.__cap = None
-
     @abstractmethod
-    def next_frame(self) -> ndarray:
-        pass
+    def next_frame(self) -> Optional[ndarray]:
+        raise NotImplementedError()
 
     @abstractmethod
     def get_fps(self) -> int:
-        pass
+        raise NotImplementedError()
 
+    @abstractmethod
     def get_frame_size(self) -> (int, int):
-        return self.__x_frame, self.__y_frame
+        raise NotImplementedError()
 
     def close(self):
         pass

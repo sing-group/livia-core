@@ -1,3 +1,5 @@
+from typing import Optional
+
 from cv2 import CAP_PROP_FPS
 from cv2.cv2 import VideoCapture, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH
 from numpy import ndarray
@@ -10,7 +12,7 @@ class OpenCVFrameInput(FrameInput):
         super().__init__()
         self._capture = capture
 
-    def next_frame(self) -> ndarray:
+    def next_frame(self) -> Optional[ndarray]:
         if self._capture.isOpened():
             ret, frame = self._capture.read()
             return frame
