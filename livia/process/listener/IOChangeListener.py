@@ -1,7 +1,8 @@
+from livia.process.listener.EventListener import EventListener
 from livia.process.listener.IOChangeEvent import IOChangeEvent
 
 
-class IOChangeListener:
+class IOChangeListener(EventListener):
     def input_changed(self, event: IOChangeEvent):
         pass
 

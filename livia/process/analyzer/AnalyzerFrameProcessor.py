@@ -1,5 +1,3 @@
-from typing import List
-
 from numpy import ndarray
 
 from livia.input.FrameInput import FrameInput
@@ -8,6 +6,7 @@ from livia.process.FrameProcessor import FrameProcessor
 from livia.process.analyzer.FrameAnalyzer import FrameAnalyzer
 from livia.process.analyzer.listener.FrameAnalyzerChangeEvent import FrameAnalyzerChangeEvent
 from livia.process.analyzer.listener.FrameAnalyzerChangeListener import FrameAnalyzerChangeListener
+from livia.process.listener.EventListeners import EventListeners
 
 
 class AnalyzerFrameProcessor(FrameProcessor):
@@ -15,7 +14,8 @@ class AnalyzerFrameProcessor(FrameProcessor):
         super().__init__(input, output, daemon)
 
         self._frame_analyzer = frame_analyzer
-        self._frame_analyzer_change_listeners: List[FrameAnalyzerChangeListener] = []
+        self._frame_analyzer_change_listeners: EventListeners[FrameAnalyzerChangeListener] =\
+            EventListeners[FrameAnalyzerChangeListener]()
 
     def manipulate_frame(self, num_frame: int, frame: ndarray) -> ndarray:
         modification = self._frame_analyzer.analyze(num_frame, frame)

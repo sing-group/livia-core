@@ -9,6 +9,7 @@ from livia.output import FrameOutput
 from livia.process.FrameProcessError import FrameProcessError
 from livia.process.listener import IOChangeEvent
 from livia.process.listener import IOChangeListener
+from livia.process.listener.EventListeners import EventListeners
 from livia.process.listener.ProcessChangeEvent import ProcessChangeEvent
 from livia.process.listener.ProcessChangeListener import ProcessChangeListener
 
@@ -24,8 +25,8 @@ class FrameProcessor(ABC):
         self._alive: bool = False
         self._paused: bool = False
 
-        self._io_change_listeners: List[IOChangeListener] = []
-        self._process_change_listeners: List[ProcessChangeListener] = []
+        self._io_change_listeners: EventListeners[IOChangeListener] = EventListeners[IOChangeListener]()
+        self._process_change_listeners: EventListeners[ProcessChangeListener] = EventListeners[ProcessChangeListener]()
 
         self._play_thread: Optional[Thread] = None
 

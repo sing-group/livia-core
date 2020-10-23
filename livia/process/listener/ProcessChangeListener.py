@@ -1,7 +1,8 @@
+from livia.process.listener.EventListener import EventListener
 from livia.process.listener.ProcessChangeEvent import ProcessChangeEvent
 
 
-class ProcessChangeListener:
+class ProcessChangeListener(EventListener):
     def started(self, event: ProcessChangeEvent):
         pass
 
