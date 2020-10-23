@@ -4,8 +4,8 @@ from livia.process.analyzer import FrameAnalyzer
 class FrameAnalyzerChangeEvent:
     def __init__(self, processor, new: FrameAnalyzer, old: FrameAnalyzer):
         self.__processor = processor
-        self.__new = new
-        self.__old = old
+        self.__new: FrameAnalyzer = new
+        self.__old: FrameAnalyzer = old
 
     def processor(self):
         return self.__processor
