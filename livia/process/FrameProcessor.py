@@ -1,15 +1,15 @@
 from abc import ABC, abstractmethod
 from threading import Thread, Condition, Lock
-from typing import List, Optional
+from typing import Optional
 
 from numpy import ndarray
 
-from livia.input import FrameInput
-from livia.output import FrameOutput
+from livia.input.FrameInput import FrameInput
+from livia.output.FrameOutput import FrameOutput
 from livia.process.FrameProcessError import FrameProcessError
-from livia.process.listener import IOChangeEvent
-from livia.process.listener import IOChangeListener
 from livia.process.listener.EventListeners import EventListeners
+from livia.process.listener.IOChangeEvent import IOChangeEvent
+from livia.process.listener.IOChangeListener import IOChangeListener
 from livia.process.listener.ProcessChangeEvent import ProcessChangeEvent
 from livia.process.listener.ProcessChangeListener import ProcessChangeListener
 

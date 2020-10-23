@@ -9,8 +9,9 @@ from livia.input.OpenCVFrameInput import OpenCVFrameInput
 
 
 class FileFrameInput(OpenCVFrameInput):
-    def __init__(self, path: str, delay: int = None):
+    def __init__(self, path: str, delay: Optional[int] = None):
         super().__init__(VideoCapture(path))
+        self.__delay: float = 1 / 25
 
         if delay is None:
             try:
@@ -20,7 +21,7 @@ class FileFrameInput(OpenCVFrameInput):
         else:
             self.__delay = delay
 
-        self.__last_frame_time = 0
+        self.__last_frame_time: float = 0
 
     def next_frame(self) -> Optional[ndarray]:
         if self._capture.isOpened():

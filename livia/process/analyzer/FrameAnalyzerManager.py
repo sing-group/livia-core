@@ -9,7 +9,7 @@ from livia.process.analyzer.FrameAnalyzerMetadata import FrameAnalyzerMetadata
 
 
 class FrameAnalyzerManager:
-    __analyzers = []
+    __analyzers: List[FrameAnalyzerMetadata] = []
 
     @staticmethod
     def register_analyzer(frame_analyzer_metadata: FrameAnalyzerMetadata):

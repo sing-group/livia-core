@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Optional
+from typing import Optional, Tuple
 
 from numpy import ndarray
 
@@ -9,32 +9,32 @@ from livia.process.analyzer.FrameAnalyzer import FrameAnalyzer
 from livia.process.analyzer.NoChangeFrameAnalyzer import NoChangeFrameAnalyzer
 from livia.process.analyzer.modification.FrameModification import FrameModification
 from livia.process.analyzer.object_detection import DEFAULT_BOX_COLOR
-from livia.process.analyzer.object_detection import FrameObjectDetection
-from livia.process.analyzer.object_detection import ObjectDetectionFrameModification
+from livia.process.analyzer.object_detection.FrameObjectDetection import FrameObjectDetection
+from livia.process.analyzer.object_detection.ObjectDetectionFrameModification import ObjectDetectionFrameModification
 
 
 class ObjectDetectorFrameAnalyzer(CompositeFrameAnalyzer):
     def __init__(self,
                  score_threshold: Optional[float] = None,
-                 box_color: (int, int, int) = DEFAULT_BOX_COLOR,
+                 box_color: Tuple[int, int, int] = DEFAULT_BOX_COLOR,
                  child: FrameAnalyzer = NoChangeFrameAnalyzer()):
         super().__init__(child)
         self._score_threshold: Optional[float] = score_threshold
-        self._box_color: (int, int, int) = box_color
+        self._box_color: Tuple[int, int, int] = box_color
 
-    @livia_property
-    def box_color(self) -> (int, int, int):
+    @livia_property(id="box-color", name="Box color")
+    def box_color(self) -> Tuple[int, int, int]:
         return self._box_color
 
-    @box_color.setter
-    def box_color(self, box_color: (int, int, int)):
+    @box_color.setter  # type: ignore
+    def box_color(self, box_color: Tuple[int, int, int]):
         self._box_color = box_color
 
-    @livia_property
+    @livia_property(id="threshold", name="Score threshold")
     def score_threshold(self) -> Optional[float]:
         return self._score_threshold
 
-    @score_threshold.setter
+    @score_threshold.setter  # type: ignore
     def score_threshold(self, score_threshold: Optional[float]):
         self._score_threshold = score_threshold
 

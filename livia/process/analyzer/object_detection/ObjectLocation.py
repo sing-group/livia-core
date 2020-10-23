@@ -1,3 +1,6 @@
+from typing import Tuple, Callable
+
+
 class ObjectLocation:
     def __init__(self, x0: float, y0: float, x1: float, y1: float):
         self.__x0 = min(x0, x1)
@@ -22,15 +25,15 @@ class ObjectLocation:
         return self.__y1
 
     @property
-    def coord0(self) -> (float, float):
+    def coord0(self) -> Tuple[float, float]:
         return self.x0, self.y0
 
     @property
-    def coord1(self) -> (float, float):
+    def coord1(self) -> Tuple[float, float]:
         return self.x1, self.y1
 
     @property
-    def coords(self) -> (float, float, float, float):
+    def coords(self) -> Tuple[float, float, float, float]:
         return self.x0, self.y0, self.x0, self.x1
 
     @property
@@ -38,18 +41,18 @@ class ObjectLocation:
         return (self.x1 - self.x0) * (self.y1 - self.y0)
 
     def adjust_coord0(self,
-                      x_adjustment: lambda x: float = lambda x: x,
-                      y_adjustment: lambda y: float = lambda y: y) -> (int, int):
+                      x_adjustment: Callable[[float], float] = lambda x: x,
+                      y_adjustment: Callable[[float], float] = lambda y: y) -> Tuple[int, int]:
         return int(x_adjustment(self.__x0)), int(y_adjustment(self.__y0))
 
     def adjust_coord1(self,
-                      x_adjustment: lambda x: float = lambda x: x,
-                      y_adjustment: lambda y: float = lambda y: y) -> (int, int):
+                      x_adjustment: Callable[[float], float] = lambda x: x,
+                      y_adjustment: Callable[[float], float] = lambda y: y) -> Tuple[int, int]:
         return int(x_adjustment(self.__x1)), int(y_adjustment(self.__y1))
 
     def adjust_coords(self,
-                      x_adjustment: lambda x: float = lambda x: x,
-                      y_adjustment: lambda y: float = lambda y: y) -> (int, int):
+                      x_adjustment: Callable[[float], float] = lambda x: x,
+                      y_adjustment: Callable[[float], float] = lambda y: y) -> Tuple[int, int, int, int]:
         return int(x_adjustment(self.__x0)), int(y_adjustment(self.__y0)), \
                int(x_adjustment(self.__x1)), int(y_adjustment(self.__y1))
 

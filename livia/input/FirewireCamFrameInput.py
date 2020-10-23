@@ -5,5 +5,5 @@ from livia.input.OpenCVFrameInput import OpenCVFrameInput
 
 
 class FirewireCamFrameInput(OpenCVFrameInput):
-    def __init__(self) -> VideoCapture:
-        super().__init(VideoCapture(CAP_FIREWIRE))
+    def __init__(self):
+        super().__init__(VideoCapture(CAP_FIREWIRE))

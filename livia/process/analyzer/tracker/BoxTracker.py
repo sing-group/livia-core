@@ -8,9 +8,9 @@ from livia.process.analyzer.modification.FrameModification import FrameModificat
 
 class BoxTracker(ABC):
     def __init__(self, frames_window_size: int = 10):
-        self.__frames_window = deque([], frames_window_size)
+        self.__frames_window: deque = deque([], frames_window_size)
 
-    def process_frame(self, frame: ndarray, frame_modification: FrameDetection) -> FrameModification:
+    def process_frame(self, frame: ndarray, frame_modification: FrameModification) -> FrameModification:
         new_frame_modification = self._calculate_boxes(frame, frame_modification)
 
         self.__frames_window.append((frame_modification, new_frame_modification))

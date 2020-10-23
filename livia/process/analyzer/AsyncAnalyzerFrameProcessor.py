@@ -1,5 +1,5 @@
 from threading import Thread, Lock, Condition
-from typing import Optional
+from typing import Optional, Tuple
 
 from numpy import ndarray
 
@@ -16,7 +16,7 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
 
         self._analyzer_thread: Optional[Thread] = None
 
-        self._current_frame: Optional[(int, ndarray)] = None
+        self._current_frame: Optional[Tuple[int, ndarray]] = None
 
         self._frame_analyzer_lock: Lock = Lock()
         self._current_modification: Optional[FrameModification] = None
@@ -24,7 +24,7 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
         self._modification_condition: Condition = Condition(lock=Lock())
 
     @AnalyzerFrameProcessor.frame_analyzer.setter
-    def frame_analyzer(self, frame_analyzer: FrameAnalyzer) -> FrameAnalyzer:
+    def frame_analyzer(self, frame_analyzer: FrameAnalyzer):
         if self._frame_analyzer != frame_analyzer:
             with self._frame_analyzer_lock:
                 super().frame_analyzer = frame_analyzer

@@ -4,5 +4,5 @@ from livia.input.OpenCVFrameInput import OpenCVFrameInput
 
 
 class WebCamFrameInput(OpenCVFrameInput):
-    def __init__(self, webcam_index: int = 0) -> VideoCapture:
+    def __init__(self, webcam_index: int = 0):
         super().__init__(VideoCapture(webcam_index))

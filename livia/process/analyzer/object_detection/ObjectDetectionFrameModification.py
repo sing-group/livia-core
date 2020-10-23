@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 import cv2
 from numpy import ndarray
@@ -7,20 +7,20 @@ from livia.process.analyzer.modification.CompositeFrameModification import Compo
 from livia.process.analyzer.modification.FrameModification import FrameModification
 from livia.process.analyzer.modification.NoFrameModification import NoFrameModification
 from livia.process.analyzer.object_detection import DEFAULT_BOX_COLOR
-from livia.process.analyzer.object_detection import FrameObjectDetection
 from livia.process.analyzer.object_detection.DetectedObject import DetectedObject
+from livia.process.analyzer.object_detection.FrameObjectDetection import FrameObjectDetection
 
 
 class ObjectDetectionFrameModification(CompositeFrameModification):
     def __init__(self,
                  frame_detection: FrameObjectDetection,
                  score_threshold: Optional[float] = None,
-                 box_color: (int, int, int) = DEFAULT_BOX_COLOR,
+                 box_color: Tuple[int, int, int] = DEFAULT_BOX_COLOR,
                  child: FrameModification = NoFrameModification()):
         super().__init__(child)
-        self._frame_detection = frame_detection
-        self._score_threshold = score_threshold
-        self._box_color = box_color
+        self._frame_detection: FrameObjectDetection = frame_detection
+        self._score_threshold: Optional[float] = score_threshold
+        self._box_color: Tuple[int, int, int] = box_color
 
     def _composite_modify(self, num_frame: int, frame: ndarray) -> ndarray:
         self._pre_draw(num_frame, frame)
@@ -36,8 +36,8 @@ class ObjectDetectionFrameModification(CompositeFrameModification):
         if self._score_threshold is None:
             return self._frame_detection.objects
         else:
-            return [detected_object for detected_object in self._frame_detection.objects
-                    if detected_object.has_score() and detected_object.score >= self._score_threshold]
+            return [detected_object for detected_object in self._frame_detection.objects if
+                    detected_object.has_score() and detected_object.score >= self._score_threshold] # type: ignore
 
     def _pre_draw(self, num_frame: int, frame: ndarray):
         pass

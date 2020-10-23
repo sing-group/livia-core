@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Tuple
 
 from numpy import ndarray
 
@@ -14,7 +14,7 @@ class FrameInput(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_frame_size(self) -> (int, int):
+    def get_frame_size(self) -> Tuple[int, int]:
         raise NotImplementedError()
 
     def close(self):

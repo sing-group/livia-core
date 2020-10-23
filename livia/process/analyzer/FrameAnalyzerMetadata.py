@@ -1,6 +1,6 @@
 import inspect
 from functools import wraps
-from typing import List, Optional
+from typing import List, Optional, Type
 
 from livia.LiviaPropertyMetadata import LiviaPropertyMetadata
 from livia.livia_property import del_livia_property_attrs, is_livia_property, get_property_metadata
@@ -42,13 +42,13 @@ class FrameAnalyzerPropertyMetadata(object):
 
 
 class FrameAnalyzerMetadata(object):
-    def __init__(self, analyzer_class, id: str, name: str = DEFAULT_FRAME_ANALYZER_NAME):
+    def __init__(self, analyzer_class: Type[FrameAnalyzer], id: str, name: str = DEFAULT_FRAME_ANALYZER_NAME):
         if not issubclass(analyzer_class, FrameAnalyzer):
             raise ValueError(f"Invalid analyzer class: {analyzer_class.__name__}")
         if id is None:
             raise ValueError("id can't be None")
 
-        self.__analyzer_class = analyzer_class
+        self.__analyzer_class: Type[FrameAnalyzer] = analyzer_class
         self.__id: str = id
         self.__name: str = name
         self.__properties: List[FrameAnalyzerPropertyMetadata] = []
@@ -59,11 +59,11 @@ class FrameAnalyzerMetadata(object):
             del_livia_property_attrs(prop)
 
     @property
-    def id(self):
+    def id(self) -> str:
         return self.__id
 
     @property
-    def analyzer_class(self):
+    def analyzer_class(self) -> Type[FrameAnalyzer]:
         return self.__analyzer_class
 
     @property
@@ -91,12 +91,12 @@ class FrameAnalyzerMetadata(object):
         return text[:-2]
 
 
-def frame_analyzer(cls=None, *, id: str = None, name: str = DEFAULT_FRAME_ANALYZER_NAME):
+def frame_analyzer(cls=None, *, id: str, name: str = DEFAULT_FRAME_ANALYZER_NAME):
     # This import must be done here to avoid cross import
     from livia.process.analyzer.FrameAnalyzerManager import FrameAnalyzerManager
 
     if cls:
-        FrameAnalyzerManager.register_analyzer(FrameAnalyzerMetadata(cls))
+        FrameAnalyzerManager.register_analyzer(FrameAnalyzerMetadata(cls, id=id, name=name))
         return cls
     else:
         @wraps(cls)

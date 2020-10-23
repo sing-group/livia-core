@@ -1,4 +1,4 @@
-from multiprocessing import Lock
+from threading import Lock
 from typing import TypeVar, Generic, List
 
 from livia.process.listener.EventListener import EventListener

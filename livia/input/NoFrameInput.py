@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 
 from numpy import ndarray
 
@@ -20,5 +20,5 @@ class NoFrameInput(FrameInput):
     def get_fps(self) -> int:
         return 0
 
-    def get_frame_size(self) -> (int, int):
+    def get_frame_size(self) -> Tuple[int, int]:
         return 0, 0

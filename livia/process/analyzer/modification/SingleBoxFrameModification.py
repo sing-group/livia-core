@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import cv2
 from numpy import ndarray
 
@@ -8,13 +10,13 @@ from livia.process.analyzer.object_detection import DEFAULT_BOX_COLOR, DEFAULT_B
 
 
 class SingleBoxFrameModification(CompositeFrameModification):
-    def __init__(self, box: (int, int, int, int),
-                 box_color: (int, int, int) = DEFAULT_BOX_COLOR,
+    def __init__(self, box: Tuple[int, int, int, int],
+                 box_color: Tuple[int, int, int] = DEFAULT_BOX_COLOR,
                  box_thickness: int = DEFAULT_BOX_THICKNESS,
                  child: FrameModification = NoFrameModification()):
         super().__init__(child)
-        self.__box: (int, int, int, int) = box
-        self.__box_color: (int, int, int) = box_color
+        self.__box: Tuple[int, int, int, int] = box
+        self.__box_color: Tuple[int, int, int] = box_color
         self.__box_thickness: int = box_thickness
 
     def _composite_modify(self, num_frame: int, frame: ndarray) -> ndarray:
