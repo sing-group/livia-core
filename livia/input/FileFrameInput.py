@@ -1,5 +1,5 @@
 import time
-from typing import Optional
+from typing import Optional, Tuple
 
 from cv2 import CAP_PROP_FPS
 from cv2.cv2 import VideoCapture
@@ -23,9 +23,11 @@ class FileFrameInput(OpenCVFrameInput):
 
         self.__last_frame_time: float = 0
 
-    def next_frame(self) -> Optional[ndarray]:
+    def next_frame(self) -> Tuple[Optional[int], Optional[ndarray]]:
         if self._capture.isOpened():
             ret, frame = self._capture.read()
+            num_frame = self._frame_count
+            self._frame_count += 1
 
             elapsed = time.time() - self.__last_frame_time
 
@@ -34,6 +36,6 @@ class FileFrameInput(OpenCVFrameInput):
 
             self.__last_frame_time = time.time()
 
-            return frame if ret else None
+            return num_frame, frame if ret else None
         else:
-            return None
+            return None, None

@@ -77,6 +77,9 @@ class FrameProcessor(ABC):
             return self._paused
 
     def _play(self):
+        with self._input_lock:
+            self._input.play()
+
         while True:
             with self._running_condition:
                 if self._paused:
@@ -89,20 +92,17 @@ class FrameProcessor(ABC):
                     break
 
                 with self._input_lock:
-                    frame = self._input.next_frame()
+                    self._num_frame, frame = self._input.next_frame()
 
                 if frame is None:
                     self._play_thread = None
                     self._alive = False
                     break
 
-                num_frame = self._num_frame
-                self._num_frame += 1
-
-            self.process_frame(num_frame, frame)
+            self.process_frame(self._num_frame, frame)
 
         for listener in self._process_change_listeners:
-            listener.finished(ProcessChangeEvent(self, self._num_frame - 1))
+            listener.finished(ProcessChangeEvent(self, self._num_frame))
 
     def pause(self):
         with self._running_condition:

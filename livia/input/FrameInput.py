@@ -5,8 +5,11 @@ from numpy import ndarray
 
 
 class FrameInput(ABC):
+    def play(self):
+        pass
+
     @abstractmethod
-    def next_frame(self) -> Optional[ndarray]:
+    def next_frame(self) -> Tuple[Optional[int], Optional[ndarray]]:
         raise NotImplementedError()
 
     @abstractmethod

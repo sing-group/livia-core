@@ -10,14 +10,18 @@ from livia.input.FrameInput import FrameInput
 class OpenCVFrameInput(FrameInput):
     def __init__(self, capture: VideoCapture):
         super().__init__()
-        self._capture = capture
+        self._capture: VideoCapture = capture
+        self._frame_count: int = 0
 
-    def next_frame(self) -> Optional[ndarray]:
+    def next_frame(self) -> Tuple[Optional[int], Optional[ndarray]]:
         if self._capture.isOpened():
             ret, frame = self._capture.read()
-            return frame
+            num_frame = self._frame_count
+            self._frame_count += 1
+
+            return num_frame, frame
         else:
-            return None
+            return None, None
 
     def get_fps(self) -> int:
         return self._capture.get(CAP_PROP_FPS)
