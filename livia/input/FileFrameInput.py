@@ -9,7 +9,7 @@ from livia.input.OpenCVFrameInput import OpenCVFrameInput
 
 
 class FileFrameInput(OpenCVFrameInput):
-    def __init__(self, path: str, delay: Optional[int] = None):
+    def __init__(self, path: str, delay: Optional[float] = None):
         super().__init__(VideoCapture(path))
         self.__delay: float = 1 / 25
 
