@@ -27,7 +27,7 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
     def frame_analyzer(self, frame_analyzer: FrameAnalyzer):
         if self._frame_analyzer != frame_analyzer:
             with self._frame_analyzer_lock:
-                super().frame_analyzer = frame_analyzer
+                AnalyzerFrameProcessor.frame_analyzer.fset(self, frame_analyzer)
 
     def process_frame(self, num_frame: int, frame: ndarray):
         with self._modification_condition:
