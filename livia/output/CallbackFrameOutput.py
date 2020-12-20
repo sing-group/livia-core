@@ -15,12 +15,10 @@ def do_nothing_on_close():
 
 class CallbackFrameOutput(FrameOutput):
     def __init__(self,
-                 show_frame_callback: Callable[[ndarray], None] = None,
-                 close_callback: Callable[[], None] = None):
-        self._show_frame_callback: Callable[[ndarray], None] = \
-            show_frame_callback if show_frame_callback is not None else do_nothing_on_show_frame
-        self._close_callback: Callable[[], None] = \
-            close_callback if close_callback is not None else do_nothing_on_close
+                 show_frame_callback: Callable[[ndarray], None] = do_nothing_on_show_frame,
+                 close_callback: Callable[[], None] = do_nothing_on_close):
+        self._show_frame_callback: Callable[[ndarray], None] = show_frame_callback
+        self._close_callback: Callable[[], None] = close_callback
 
     def show_frame(self, frame: ndarray):
         self._show_frame_callback(frame)
