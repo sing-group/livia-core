@@ -38,6 +38,10 @@ class EventListeners(Generic[T]):
         with self._lock:
             self._listeners.remove(listener)
 
+    def clear(self):
+        with self._lock:
+            self._listeners.clear()
+
     def __contains__(self, listener: T) -> bool:
         with self._lock:
             return listener in self._listeners
