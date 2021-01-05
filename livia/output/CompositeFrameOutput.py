@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from numpy import ndarray
 
 from livia.output.FrameOutput import FrameOutput
@@ -8,6 +10,10 @@ class CompositeFrameOutput(FrameOutput):
         super().__init__()
 
         self.__outputs = [first_output, second_output, *args]
+
+    @property
+    def outputs(self) -> Tuple[FrameOutput, ...]:
+        return tuple(self.__outputs)
 
     def show_frame(self, frame: ndarray):
         for output in self.__outputs:
