@@ -17,11 +17,14 @@ class IOChangeEvent(Generic[T]):
         self.__new: T = new
         self.__old: T = old
 
+    @property
     def processor(self) -> FrameProcessor:
         return self.__processor
 
+    @property
     def new(self) -> T:
         return self.__new
 
+    @property
     def old(self) -> T:
         return self.__old
