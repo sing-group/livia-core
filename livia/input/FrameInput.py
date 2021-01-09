@@ -9,6 +9,10 @@ class FrameInput(ABC):
         pass
 
     @abstractmethod
+    def get_current_frame_index(self) -> int:
+        pass
+
+    @abstractmethod
     def next_frame(self) -> Tuple[Optional[int], Optional[ndarray]]:
         raise NotImplementedError()
 

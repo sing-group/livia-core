@@ -14,11 +14,14 @@ class FrameAnalyzerChangeEvent:
         self.__new: FrameAnalyzer = new
         self.__old: FrameAnalyzer = old
 
+    @property
     def processor(self) -> AnalyzerFrameProcessor:
         return self.__processor
 
+    @property
     def new(self) -> FrameAnalyzer:
         return self.__new
 
+    @property
     def old(self) -> FrameAnalyzer:
         return self.__old

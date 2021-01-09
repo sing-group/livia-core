@@ -22,7 +22,7 @@ class FrameByFrameSquareFrameAnalyzer(CompositeFrameAnalyzer):
     def __init__(self, x_step: int = X_STEP, y_step: int = Y_STEP, box_size: int = BOX_SIZE,
                  box_thickness: int = DEFAULT_BOX_THICKNESS, box_color: Tuple[int, int, int] = DEFAULT_BOX_COLOR,
                  child: FrameAnalyzer = NoChangeFrameAnalyzer()):
-        super().__init__(child)
+        CompositeFrameAnalyzer.__init__(self, child)
 
         self.__x: int = 0
         self.__y: int = 0

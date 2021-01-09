@@ -22,3 +22,6 @@ class NoFrameInput(FrameInput):
 
     def get_frame_size(self) -> Tuple[int, int]:
         return 0, 0
+
+    def get_current_frame_index(self) -> Optional[int]:
+        return None
