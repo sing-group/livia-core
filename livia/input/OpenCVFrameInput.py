@@ -1,8 +1,8 @@
 from threading import Lock
 from typing import Optional, Tuple
 
-from cv2 import CAP_PROP_FPS
-from cv2.cv2 import VideoCapture, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_POS_FRAMES
+from cv2 import VideoCapture, CAP_PROP_FPS, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_POS_FRAMES, \
+    CAP_PROP_POS_MSEC
 from numpy import ndarray
 
 from livia.input.FrameInput import FrameInput
@@ -30,6 +30,10 @@ class OpenCVFrameInput(FrameInput):
     def get_current_frame_index(self) -> Optional[int]:
         with self._capture_lock:
             return self._capture.get(CAP_PROP_POS_FRAMES) - 1
+
+    def get_current_msec(self) -> Optional[int]:
+        with self._capture_lock:
+            return int(self._capture.get(CAP_PROP_POS_MSEC))
 
     def get_fps(self) -> int:
         with self._capture_lock:

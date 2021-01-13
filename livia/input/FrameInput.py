@@ -9,8 +9,13 @@ class FrameInput(ABC):
         pass
 
     @abstractmethod
-    def get_current_frame_index(self) -> int:
+    def get_current_frame_index(self) -> Optional[int]:
         pass
+
+    def get_current_msec(self) -> Optional[int]:
+        frame_index = self.get_current_frame_index()
+
+        return None if frame_index is None else round(frame_index * (1 / self.get_fps()) * 1000)
 
     @abstractmethod
     def next_frame(self) -> Tuple[Optional[int], Optional[ndarray]]:

@@ -51,7 +51,7 @@ class FileFrameInput(OpenCVFrameInput, SeekableFrameInput):
 
     def go_to_msec(self, msec: float):
         with self._capture_lock:
-            self._capture.get(CAP_PROP_POS_MSEC, msec)
+            self._capture.set(CAP_PROP_POS_MSEC, msec)
 
     def get_length_in_frames(self) -> int:
         return self._length_in_frames
