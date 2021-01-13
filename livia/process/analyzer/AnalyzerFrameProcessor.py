@@ -17,10 +17,10 @@ class AnalyzerFrameProcessor(FrameProcessor):
         self._frame_analyzer_change_listeners: EventListeners[FrameAnalyzerChangeListener] =\
             EventListeners[FrameAnalyzerChangeListener]()
 
-    def manipulate_frame(self, num_frame: int, frame: ndarray) -> ndarray:
-        modification = self._frame_analyzer.analyze(num_frame, frame)
+    def _manipulate_frame(self, frame: ndarray) -> ndarray:
+        modification = self._frame_analyzer.analyze(self._num_frame, frame)
 
-        return modification.modify(num_frame, frame)
+        return modification.modify(self._num_frame, frame)
 
     @property
     def frame_analyzer(self) -> FrameAnalyzer:

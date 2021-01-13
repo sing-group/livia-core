@@ -17,3 +17,9 @@ class ProcessChangeListener(EventListener):
 
     def resumed(self, event: ProcessChangeEvent):
         pass
+
+    def frame_inputted(self, event: ProcessChangeEvent):
+        pass
+
+    def frame_outputted(self, event: ProcessChangeEvent):
+        pass

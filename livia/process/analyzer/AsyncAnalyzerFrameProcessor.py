@@ -16,7 +16,7 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
 
         self._analyzer_thread: Optional[Thread] = None
 
-        self._current_frame: Optional[Tuple[int, ndarray]] = None
+        self._current_frame: Optional[ndarray] = None
 
         self._frame_analyzer_lock: Lock = Lock()
         self._current_modification: Optional[FrameModification] = None
@@ -29,22 +29,19 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
             with self._frame_analyzer_lock:
                 AnalyzerFrameProcessor.frame_analyzer.fset(self, frame_analyzer)
 
-    def process_frame(self, num_frame: int, frame: ndarray):
+    def _process_frame(self, frame: ndarray):
         with self._modification_condition:
-            self._current_frame = (num_frame, frame)
+            self._current_frame = frame
             self._modification_condition.notify()
 
-        modified_frame = self.manipulate_frame(num_frame, frame)
+        super()._process_frame(frame)
 
-        with self._output_lock:
-            self._output.show_frame(modified_frame)
-
-    def manipulate_frame(self, num_frame: int, frame: ndarray) -> ndarray:
+    def _manipulate_frame(self, frame: ndarray) -> ndarray:
         with self._current_modification_lock:
             modification = self._current_modification
             self._current_modification = None
 
-        return modification.modify(num_frame, frame) if modification is not None else frame
+        return modification.modify(self._num_frame, frame) if modification is not None else frame
 
     def _on_start(self):
         self._analyzer_thread = Thread(target=self._analyze_frame, daemon=True, name="Asynchronous Analyzer Thread")
@@ -65,7 +62,7 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
                 self._modification_condition.wait()
                 if self._alive:
                     with self._frame_analyzer_lock:
-                        modification = self._frame_analyzer.analyze(*self._current_frame)
+                        modification = self._frame_analyzer.analyze(self._num_frame, self._current_frame)
                 else:
                     break
 

@@ -18,18 +18,18 @@ class OpenCVFrameInput(FrameInput):
         if self._capture.isOpened():
             with self._capture_lock:
                 if self._capture.isOpened():
+                    num_frame = int(self._capture.get(CAP_PROP_POS_FRAMES))
                     ret, frame = self._capture.read()
-                    num_frame = self._capture.get(CAP_PROP_POS_FRAMES) - 1
                 else:
                     return None, None
 
-            return num_frame, frame
+            return (num_frame, frame) if ret else (None, None)
         else:
             return None, None
 
     def get_current_frame_index(self) -> Optional[int]:
         with self._capture_lock:
-            return self._capture.get(CAP_PROP_POS_FRAMES) - 1
+            return int(self._capture.get(CAP_PROP_POS_FRAMES)) - 1
 
     def get_current_msec(self) -> Optional[int]:
         with self._capture_lock:

@@ -20,7 +20,7 @@ class FrameProcessor(ABC):
         self._output: FrameOutput = output
         self._daemon: bool = daemon
 
-        self._num_frame = 0
+        self._num_frame: Optional[int] = None
 
         self._alive: bool = False
         self._paused: bool = False
@@ -81,28 +81,62 @@ class FrameProcessor(ABC):
             self._input.play()
 
         while True:
-            with self._running_condition:
-                if self._paused:
-                    self._running_condition.notify_all()
-                    self._running_condition.wait()
+            if not self._check_running_status():
+                break
 
-                if not self._alive:
-                    self._play_thread = None
-                    self._alive = False
-                    break
-
-                with self._input_lock:
-                    self._num_frame, frame = self._input.next_frame()
+            with self._input_lock:
+                self._num_frame, frame = self._input.next_frame()
 
                 if frame is None:
-                    self._play_thread = None
-                    self._alive = False
                     break
 
-            self.process_frame(self._num_frame, frame)
+            if not self._check_running_status():
+                break
 
-        for listener in self._process_change_listeners:
-            listener.finished(ProcessChangeEvent(self, self._num_frame))
+            self._process_frame(frame)
+
+        with self._running_condition:
+            self._alive = False
+            self._paused = False
+            event = ProcessChangeEvent(self, self._num_frame)
+            for listener in self._process_change_listeners:
+                listener.finished(event)
+
+    def _process_frame(self, frame: ndarray):
+        self._output_frame(self._manipulate_frame(frame))
+
+    @abstractmethod
+    def _manipulate_frame(self, frame: ndarray) -> ndarray:
+        raise NotImplementedError()
+
+    def _check_running_status(self):
+        with self._running_condition:
+            if self._paused:
+                self._running_condition.notify_all()
+                self._running_condition.wait()
+
+            if not self._alive:
+                self._play_thread = None
+                self._alive = False
+                return False
+            else:
+                return True
+
+    def _input_frame(self):
+        with self._input_lock:
+            self._num_frame, frame = self._input.next_frame()
+
+            event = ProcessChangeEvent(self, self._num_frame)
+            for listener in self._process_change_listeners:
+                listener.frame_inputted(event)
+
+    def _output_frame(self, frame: ndarray):
+        with self._output_lock:
+            self._output.output_frame(self._num_frame, frame)
+
+            event = ProcessChangeEvent(self, self._num_frame)
+            for listener in self._process_change_listeners:
+                listener.frame_outputted(event)
 
     def pause(self):
         with self._running_condition:
@@ -142,9 +176,6 @@ class FrameProcessor(ABC):
                 for listener in self._process_change_listeners:
                     listener.started(event)
 
-    def _on_start(self):
-        pass
-
     def stop(self):
         with self._running_condition:
             if self._alive:
@@ -159,29 +190,22 @@ class FrameProcessor(ABC):
             else:
                 raise FrameProcessError("Process is not running")
 
-    def _on_stop(self):
-        pass
-
     def stop_and_wait(self):
         thread = self._play_thread
         self.stop()
         thread.join()
-
-    def process_frame(self, num_frame: int, frame: ndarray):
-        modified_frame = self.manipulate_frame(num_frame, frame)
-
-        with self._output_lock:
-            self._output.show_frame(modified_frame)
-
-    @abstractmethod
-    def manipulate_frame(self, num_frame: int, frame: ndarray) -> ndarray:
-        raise NotImplementedError()
 
     def close(self):
         with self._input_lock:
             with self._output_lock:
                 self._input.close()
                 self._output.close()
+
+    def _on_start(self):
+        pass
+
+    def _on_stop(self):
+        pass
 
     def __enter__(self):
         pass

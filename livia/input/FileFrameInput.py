@@ -29,10 +29,12 @@ class FileFrameInput(OpenCVFrameInput, SeekableFrameInput):
         if self._capture.isOpened():
             with self._capture_lock:
                 if self._capture.isOpened():
+                    num_frame = self._capture.get(CAP_PROP_POS_FRAMES)
                     ret, frame = self._capture.read()
-                    num_frame = self._capture.get(CAP_PROP_POS_FRAMES) - 1
                 else:
-                    return None, None
+                    ret = False
+                    frame = None
+                    num_frame = None
 
             elapsed = time.time() - self.__last_frame_time
 
@@ -41,7 +43,7 @@ class FileFrameInput(OpenCVFrameInput, SeekableFrameInput):
 
             self.__last_frame_time = time.time()
 
-            return num_frame, frame if ret else None
+            return (num_frame, frame) if ret else (None, None)
         else:
             return None, None
 

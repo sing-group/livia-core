@@ -5,7 +5,7 @@ from numpy import ndarray
 from livia.output.FrameOutput import FrameOutput
 
 
-def do_nothing_on_show_frame(frame: ndarray):
+def do_nothing_on_show_frame(num_frame: int, frame: ndarray):
     pass
 
 
@@ -15,13 +15,13 @@ def do_nothing_on_close():
 
 class CallbackFrameOutput(FrameOutput):
     def __init__(self,
-                 show_frame_callback: Callable[[ndarray], None] = do_nothing_on_show_frame,
+                 output_frame_callback: Callable[[int, ndarray], None] = do_nothing_on_show_frame,
                  close_callback: Callable[[], None] = do_nothing_on_close):
-        self._show_frame_callback: Callable[[ndarray], None] = show_frame_callback
+        self._output_frame_callback: Callable[[int, ndarray], None] = output_frame_callback
         self._close_callback: Callable[[], None] = close_callback
 
-    def show_frame(self, frame: ndarray):
-        self._show_frame_callback(frame)
+    def output_frame(self, num_frame: int, frame: ndarray):
+        self._output_frame_callback(num_frame, frame)
 
     def close(self):
         self._close_callback()

@@ -12,7 +12,7 @@ class FileFrameOutput(FrameOutput):
 
         self.__output = VideoWriter(path, VideoWriter_fourcc(*fourcc), fps, (width, height))
 
-    def show_frame(self, frame: ndarray):
+    def output_frame(self, num_frame: int, frame: ndarray):
         self.__output.write(frame)
 
     def close(self):
