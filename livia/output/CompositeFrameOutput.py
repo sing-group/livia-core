@@ -14,6 +14,17 @@ class CompositeFrameOutput(FrameOutput):
 
         self.__lock: Lock = Lock()
 
+    def has_descendant(self, output: FrameOutput) -> bool:
+        with self.__lock:
+            for child in self.__outputs:
+                if child == output:
+                    return True
+                elif isinstance(child, CompositeFrameOutput):
+                    if child.has_descendant(output):
+                        return True
+
+            return False
+
     def remove_output(self, output: FrameOutput) -> bool:
         with self.__lock:
             for i in range(0, len(self.__outputs)):
