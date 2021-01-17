@@ -37,6 +37,9 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
         super()._process_frame(frame)
 
     def _manipulate_frame(self, frame: ndarray) -> ndarray:
+        if self._num_frame is None:
+            raise RuntimeError("self._num_frame should not be None")
+
         with self._current_modification_lock:
             modification = self._current_modification
             self._current_modification = None

@@ -132,6 +132,9 @@ class FrameProcessor(ABC):
 
     def _output_frame(self, frame: ndarray):
         with self._output_lock:
+            if self._num_frame is None:
+                raise RuntimeError("self._num_frame should not be None")
+
             self._output.output_frame(self._num_frame, frame)
 
             event = ProcessChangeEvent(self, self._num_frame)

@@ -9,5 +9,5 @@ class NoChangeFrameProcessor(FrameProcessor):
     def __init__(self, input: FrameInput, output: FrameOutput, daemon: bool = True):
         super().__init__(input, output, daemon)
 
-    def _manipulate_frame(self, num_frame: int, frame: ndarray) -> ndarray:
+    def _manipulate_frame(self, frame: ndarray) -> ndarray:
         return frame

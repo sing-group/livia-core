@@ -18,6 +18,9 @@ class AnalyzerFrameProcessor(FrameProcessor):
             EventListeners[FrameAnalyzerChangeListener]()
 
     def _manipulate_frame(self, frame: ndarray) -> ndarray:
+        if self._num_frame is None:
+            raise RuntimeError("self._num_frame should not be None")
+
         modification = self._frame_analyzer.analyze(self._num_frame, frame)
 
         return modification.modify(self._num_frame, frame)
