@@ -1,5 +1,5 @@
 from threading import Thread, Lock, Condition
-from typing import Optional, Tuple
+from typing import Optional
 
 from numpy import ndarray
 
