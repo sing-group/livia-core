@@ -17,6 +17,9 @@ class NoFrameInput(FrameInput):
     def next_frame(self) -> Tuple[Optional[int], Optional[ndarray]]:
         return None, None
 
+    def get_current_frame(self) -> Optional[ndarray]:
+        return None
+
     def get_fps(self) -> int:
         return 0
 

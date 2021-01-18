@@ -8,6 +8,9 @@ class FrameInput(ABC):
     def play(self):
         pass
 
+    def get_current_frame(self) -> Optional[ndarray]:
+        raise NotImplementedError()
+
     @abstractmethod
     def get_current_frame_index(self) -> Optional[int]:
         pass

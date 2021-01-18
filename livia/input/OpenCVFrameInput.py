@@ -14,18 +14,28 @@ class OpenCVFrameInput(FrameInput):
         self._capture: VideoCapture = capture
         self._capture_lock: Lock = Lock()
 
+        self._current_frame: Optional[ndarray] = None
+
     def next_frame(self) -> Tuple[Optional[int], Optional[ndarray]]:
         if self._capture.isOpened():
             with self._capture_lock:
                 if self._capture.isOpened():
                     num_frame = int(self._capture.get(CAP_PROP_POS_FRAMES))
-                    ret, frame = self._capture.read()
+                    ret, self._current_frame = self._capture.read()
                 else:
+                    self._current_frame = None
                     return None, None
 
-            return (num_frame, frame) if ret else (None, None)
+            if ret:
+                return num_frame, self._current_frame
+            else:
+                self._current_frame = None
+                return None, None
         else:
             return None, None
+
+    def get_current_frame(self) -> Optional[ndarray]:
+        return self._current_frame
 
     def get_current_frame_index(self) -> Optional[int]:
         with self._capture_lock:
