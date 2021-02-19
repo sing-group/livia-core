@@ -1,5 +1,5 @@
 from cv2 import CAP_FIREWIRE
-from cv2.cv2 import VideoCapture
+from cv2 import VideoCapture
 
 from livia.input.OpenCVFrameInput import OpenCVFrameInput
 

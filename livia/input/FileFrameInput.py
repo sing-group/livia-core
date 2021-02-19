@@ -2,7 +2,7 @@ import time
 from typing import Optional, Tuple
 
 from cv2 import CAP_PROP_FPS, CAP_PROP_FRAME_COUNT, CAP_PROP_POS_FRAMES, CAP_PROP_POS_MSEC
-from cv2.cv2 import VideoCapture
+from cv2 import VideoCapture
 from numpy import ndarray
 
 from livia.input.OpenCVFrameInput import OpenCVFrameInput
