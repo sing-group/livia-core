@@ -22,7 +22,7 @@ class ObjectDetectorFrameAnalyzer(CompositeFrameAnalyzer, HasThreshold):
                  threshold_step: float = 0.01,
                  box_color: Tuple[int, int, int] = DEFAULT_BOX_COLOR,
                  child: FrameAnalyzer = NoChangeFrameAnalyzer()):
-        HasThreshold.__init__(initial_threshold, min_threshold, max_threshold, threshold_step)
+        HasThreshold.__init__(self, initial_threshold, min_threshold, max_threshold, threshold_step)
         CompositeFrameAnalyzer.__init__(self, child)
 
         self._box_color: Tuple[int, int, int] = box_color
