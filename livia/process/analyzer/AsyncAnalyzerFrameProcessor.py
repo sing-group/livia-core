@@ -13,7 +13,6 @@ from livia.process.analyzer.modification.FrameModification import FrameModificat
 class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
     def __init__(self, input: FrameInput, output: FrameOutput, frame_analyzer: FrameAnalyzer, daemon: bool = True):
         super().__init__(input, output, frame_analyzer, daemon)
-        print("HELLO")
 
         self._analyzer_thread: Optional[Thread] = None
 

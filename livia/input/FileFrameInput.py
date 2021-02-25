@@ -5,6 +5,7 @@ from cv2 import CAP_PROP_FPS, CAP_PROP_FRAME_COUNT, CAP_PROP_POS_FRAMES, CAP_PRO
 from cv2 import VideoCapture
 from numpy import ndarray
 
+from livia import LIVIA_LOGGER
 from livia.input.OpenCVFrameInput import OpenCVFrameInput
 from livia.input.SeekableFrameInput import SeekableFrameInput
 
@@ -39,10 +40,18 @@ class FileFrameInput(OpenCVFrameInput, SeekableFrameInput):
                     self._current_frame = None
                     num_frame = None
 
-            elapsed = time.time() - self.__last_frame_time
+            if self.__last_frame_time > 0:
+                elapsed = time.time() - self.__last_frame_time
 
-            if elapsed < self.__delay:
-                time.sleep(self.__delay - elapsed)
+                # Skips frames that could not be shown due to an inter-call time greater than the frame time
+                while elapsed > self.__delay:
+                    LIVIA_LOGGER.warning(f"Frame skipped (elapsed: {elapsed}, delay: {self.__delay})")
+                    elapsed -= self.__delay
+                    if not self._capture.grab():
+                        break
+
+                if elapsed < self.__delay:
+                    time.sleep(self.__delay - elapsed)
 
             self.__last_frame_time = time.time()
 
