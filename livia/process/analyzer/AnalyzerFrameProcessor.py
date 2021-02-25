@@ -13,7 +13,7 @@ class AnalyzerFrameProcessor(FrameProcessor):
     def __init__(self, input: FrameInput, output: FrameOutput, frame_analyzer: FrameAnalyzer, daemon: bool = True):
         super().__init__(input, output, daemon)
 
-        self._frame_analyzer = frame_analyzer
+        self._frame_analyzer: FrameAnalyzer = frame_analyzer
         self._frame_analyzer_change_listeners: EventListeners[FrameAnalyzerChangeListener] =\
             EventListeners[FrameAnalyzerChangeListener]()
 

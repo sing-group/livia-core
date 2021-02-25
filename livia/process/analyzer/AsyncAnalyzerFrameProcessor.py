@@ -13,10 +13,12 @@ from livia.process.analyzer.modification.FrameModification import FrameModificat
 class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
     def __init__(self, input: FrameInput, output: FrameOutput, frame_analyzer: FrameAnalyzer, daemon: bool = True):
         super().__init__(input, output, frame_analyzer, daemon)
+        print("HELLO")
 
         self._analyzer_thread: Optional[Thread] = None
 
         self._current_frame: Optional[ndarray] = None
+        self._current_num_frame: Optional[int] = None
 
         self._frame_analyzer_lock: Lock = Lock()
         self._current_modification: Optional[FrameModification] = None
@@ -32,6 +34,7 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
     def _process_frame(self, frame: ndarray):
         with self._modification_condition:
             self._current_frame = frame
+            self._current_num_frame = self._num_frame
             self._modification_condition.notify()
 
         super()._process_frame(frame)
@@ -65,11 +68,21 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
                 self._modification_condition.wait()
                 if self._alive:
                     with self._frame_analyzer_lock:
-                        modification = self._frame_analyzer.analyze(self._num_frame, self._current_frame)
+                        num_frame = self._current_num_frame
+                        frame = self._current_frame
+                        frame_analyzer = self._frame_analyzer
                 else:
                     break
 
-            with self._current_modification_lock:
-                self._current_modification = modification
+            if self._alive:
+                modification = frame_analyzer.analyze(num_frame, frame)
+            else:
+                break
+
+            if self._alive:
+                with self._current_modification_lock:
+                    self._current_modification = modification
+            else:
+                break
 
         self._analyzer_thread = None
