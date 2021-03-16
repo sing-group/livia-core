@@ -1,6 +1,6 @@
 import inspect
 from functools import wraps
-from typing import List, Optional, Type
+from typing import List, Optional, Type, Any
 
 from livia.LiviaPropertyMetadata import LiviaPropertyMetadata
 from livia.livia_property import del_livia_property_attrs, is_livia_property, get_property_metadata
@@ -16,6 +16,9 @@ class FrameAnalyzerPropertyMetadata(object):
         self.__name: str = name
         self.__descriptive_name: str = metadata.name if metadata.name is not None else name
         self.__order: Optional[int] = metadata.order
+        self.__default_value: Optional[Any] = metadata.default_value
+        self.__hints: Optional[str] = metadata.hints
+        self.__hidden: Optional[bool] = metadata.hidden
 
     @property
     def id(self) -> str:
@@ -37,8 +40,21 @@ class FrameAnalyzerPropertyMetadata(object):
     def prop(self) -> property:
         return self.__property
 
+    @property
+    def default_value(self) -> Optional[Any]:
+        return self.__default_value
+
+    @property
+    def hints(self) -> Optional[str]:
+        return self.__hints
+
+    @property
+    def hidden(self) -> Optional[bool]:
+        return self.__hidden
+
     def __str__(self):
-        return f"{self.name} (id={self.id}, name={self.descriptive_name}, order={self.order})"
+        return f"{self.name} (id={self.id}, name={self.descriptive_name}, order={self.order}," \
+               f" default_value={str(self.default_value)}, hints={self.hints}, hidden={self.hidden})"
 
 
 class FrameAnalyzerMetadata(object):

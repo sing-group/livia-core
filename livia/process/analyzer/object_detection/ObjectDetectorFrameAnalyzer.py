@@ -27,7 +27,7 @@ class ObjectDetectorFrameAnalyzer(CompositeFrameAnalyzer, HasThreshold):
 
         self._box_color: Tuple[int, int, int] = box_color
 
-    @livia_property(id="box-color", name="Box color")
+    @livia_property(id="box-color", name="Box color", default_value=DEFAULT_BOX_COLOR)
     def box_color(self) -> Tuple[int, int, int]:
         return self._box_color
 

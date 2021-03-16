@@ -19,7 +19,7 @@ class HasThreshold:
         self._threshold_change_listeners: EventListeners[ThresholdChangeListener] = \
             EventListeners[ThresholdChangeListener]()
 
-    @livia_property(id="threshold", name="Threshold")
+    @livia_property(id="threshold", name="Threshold", default_value=0.0)
     def threshold(self) -> float:
         return self._threshold
 

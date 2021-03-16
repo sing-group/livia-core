@@ -33,7 +33,7 @@ class FrameByFrameSquareFrameAnalyzer(CompositeFrameAnalyzer):
         self.__box_size: int = box_size
         self.__box_color: Tuple[int, int, int] = box_color
 
-    @livia_property(id="box-color", name="Box color")
+    @livia_property(id="box-color", name="Box color", default_value=DEFAULT_BOX_COLOR)
     def box_color(self) -> Tuple[int, int, int]:
         """The color of the box painted"""
         return self.__box_color
