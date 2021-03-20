@@ -3,5 +3,5 @@ from livia.process.listener import EventListener
 
 
 class FrameAnalyzerChangeListener(EventListener):
-    def analyzer_changed(self, event: FrameAnalyzerChangeEvent):
+    def analyzer_changed(self, event: FrameAnalyzerChangeEvent) -> None:
         pass

@@ -36,8 +36,7 @@ class AnalyzerFrameProcessor(FrameProcessor):
             self._frame_analyzer = frame_analyzer
 
             event = FrameAnalyzerChangeEvent(self, self._frame_analyzer, old_frame_analyzer)
-            for listener in self._frame_analyzer_change_listeners:
-                listener.analyzer_changed(event)
+            self._frame_analyzer_change_listeners.notify(FrameAnalyzerChangeListener.analyzer_changed, event)
 
     def add_frame_analyzer_change_listener(self, listener: FrameAnalyzerChangeListener):
         self._frame_analyzer_change_listeners.append(listener)

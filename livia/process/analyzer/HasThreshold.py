@@ -33,8 +33,7 @@ class HasThreshold:
             old_threshold = self._threshold
             self._threshold = threshold
             event = ThresholdChangeEvent(self, self._threshold, old_threshold)
-            for listener in self._threshold_change_listeners:
-                listener.threshold_changed(event)
+            self._threshold_change_listeners.notify(ThresholdChangeListener.threshold_changed, event)
 
     @property
     def min_threshold(self) -> float:

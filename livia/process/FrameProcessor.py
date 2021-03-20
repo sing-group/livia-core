@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from threading import Thread, Condition, Lock
-from typing import Optional
+from typing import Optional, Callable
 
 from numpy import ndarray
 
@@ -47,8 +47,7 @@ class FrameProcessor(ABC):
             self._input = input
 
             event = IOChangeEvent(self, self._input, old_input)
-            for listener in self._io_change_listeners:
-                listener.input_changed(event)
+            self._io_change_listeners.notify(IOChangeListener.input_changed, event)
 
     @property
     def output(self) -> FrameOutput:
@@ -61,8 +60,7 @@ class FrameProcessor(ABC):
             self._output = output
 
             event = IOChangeEvent(self, self._output, old_output)
-            for listener in self._io_change_listeners:
-                listener.output_changed(event)
+            self._io_change_listeners.notify(IOChangeListener.output_changed, event)
 
     def is_alive(self) -> bool:
         with self._running_condition:
@@ -87,7 +85,7 @@ class FrameProcessor(ABC):
             with self._input_lock:
                 self._num_frame, frame = self._input.next_frame()
 
-                if frame is None:
+                if self._num_frame is None or frame is None:
                     break
 
             if not self._check_running_status():
@@ -98,12 +96,13 @@ class FrameProcessor(ABC):
         with self._running_condition:
             self._alive = False
             self._paused = False
-            event = ProcessChangeEvent(self, self._num_frame)
-            for listener in self._process_change_listeners:
-                listener.finished(event)
+            self._notify_process_change_event(ProcessChangeListener.finished)
 
     def _process_frame(self, frame: ndarray):
-        self._output_frame(self._manipulate_frame(frame))
+        manipulated_frame = self._manipulate_frame(frame)
+
+        if self._check_running_status():
+            self._output_frame(manipulated_frame)
 
     @abstractmethod
     def _manipulate_frame(self, frame: ndarray) -> ndarray:
@@ -126,29 +125,21 @@ class FrameProcessor(ABC):
         with self._input_lock:
             self._num_frame, frame = self._input.next_frame()
 
-            event = ProcessChangeEvent(self, self._num_frame)
-            for listener in self._process_change_listeners:
-                listener.frame_inputted(event)
+            self._notify_process_change_event(ProcessChangeListener.frame_inputted)
 
     def _output_frame(self, frame: ndarray):
         with self._output_lock:
-            if self._num_frame is None:
-                raise RuntimeError("self._num_frame should not be None")
+            if self._check_running_status():
+                self._output.output_frame(self._num_frame, frame)
 
-            self._output.output_frame(self._num_frame, frame)
-
-            event = ProcessChangeEvent(self, self._num_frame)
-            for listener in self._process_change_listeners:
-                listener.frame_outputted(event)
+                self._notify_process_change_event(ProcessChangeListener.frame_outputted)
 
     def pause(self):
         with self._running_condition:
             if self._alive and self._play_thread.is_alive():
                 self._paused = True
 
-                event = ProcessChangeEvent(self, self._num_frame)
-                for listener in self._process_change_listeners:
-                    listener.paused(event)
+                self._notify_process_change_event(ProcessChangeListener.paused)
             else:
                 raise FrameProcessError("Process is not running")
 
@@ -158,9 +149,7 @@ class FrameProcessor(ABC):
                 self._paused = False
                 self._running_condition.notify()
 
-                event = ProcessChangeEvent(self, self._num_frame)
-                for listener in self._process_change_listeners:
-                    listener.resumed(event)
+                self._notify_process_change_event(ProcessChangeListener.resumed)
             else:
                 raise FrameProcessError("Process is not paused")
 
@@ -169,15 +158,13 @@ class FrameProcessor(ABC):
             if self._alive:
                 raise FrameProcessError("Process is already running")
             else:
-                self._num_frame = 0
+                self._num_frame = None
                 self._alive = True
                 self._play_thread = Thread(target=self._play, daemon=self._daemon, name="Frame Processor Play Thread")
                 self._play_thread.start()
                 self._on_start()
 
-                event = ProcessChangeEvent(self, self._num_frame)
-                for listener in self._process_change_listeners:
-                    listener.started(event)
+                self._notify_process_change_event(ProcessChangeListener.started)
 
     def stop(self):
         with self._running_condition:
@@ -187,9 +174,7 @@ class FrameProcessor(ABC):
                 self._running_condition.notify()  # Awake if paused
                 self._on_stop()
 
-                event = ProcessChangeEvent(self, self._num_frame)
-                for listener in self._process_change_listeners:
-                    listener.stopped(event)
+                self._notify_process_change_event(ProcessChangeListener.stopped)
             else:
                 raise FrameProcessError("Process is not running")
 
@@ -233,3 +218,8 @@ class FrameProcessor(ABC):
 
     def has_process_change_listener(self, listener: ProcessChangeListener) -> bool:
         return listener in self._process_change_listeners
+
+    def _notify_process_change_event(self,
+                                     event_method: Callable[[ProcessChangeListener, ProcessChangeEvent], None]):
+        event = ProcessChangeEvent(self, self._num_frame)
+        self._process_change_listeners.notify(event_method, event)

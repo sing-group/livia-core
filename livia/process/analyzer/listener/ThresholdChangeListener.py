@@ -3,5 +3,5 @@ from livia.process.listener import EventListener
 
 
 class ThresholdChangeListener(EventListener):
-    def threshold_changed(self, event: ThresholdChangeEvent):
+    def threshold_changed(self, event: ThresholdChangeEvent) -> None:
         pass

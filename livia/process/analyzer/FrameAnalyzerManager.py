@@ -21,6 +21,14 @@ class FrameAnalyzerManager:
         return FrameAnalyzerManager.__analyzers.copy()
 
     @staticmethod
+    def get_metadata_by_id(id: str) -> FrameAnalyzerMetadata:
+        for analyzer in FrameAnalyzerManager.list_analyzers():
+            if analyzer.id == id:
+                return analyzer
+
+        raise ValueError(f"No analyzer found for id: {id}")
+
+    @staticmethod
     def get_metadata_for(class_instance_or_name) -> FrameAnalyzerMetadata:
         if isinstance(class_instance_or_name, FrameAnalyzerMetadata):
             analyzer_class = class_instance_or_name.analyzer_class

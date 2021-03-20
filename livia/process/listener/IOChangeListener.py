@@ -5,8 +5,8 @@ from livia.process.listener.IOChangeEvent import IOChangeEvent
 
 
 class IOChangeListener(EventListener):
-    def input_changed(self, event: IOChangeEvent[FrameInput]):
+    def input_changed(self, event: IOChangeEvent[FrameInput]) -> None:
         pass
 
-    def output_changed(self, event: IOChangeEvent[FrameOutput]):
+    def output_changed(self, event: IOChangeEvent[FrameOutput]) -> None:
         pass
