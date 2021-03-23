@@ -9,48 +9,33 @@ from livia.process.analyzer.FrameAnalyzer import FrameAnalyzer
 DEFAULT_FRAME_ANALYZER_NAME: str = "<No name>"
 
 
-class FrameAnalyzerPropertyMetadata(object):
+class FrameAnalyzerPropertyMetadata(LiviaPropertyMetadata):
     def __init__(self, prop: property, name: str, metadata: LiviaPropertyMetadata):
-        self.__id = metadata.id
+        super().__init__(
+            metadata.id,
+            metadata.prop_type,
+            metadata.name,
+            metadata.order,
+            metadata.default_value,
+            metadata.hints_str,
+            metadata.hidden
+        )
         self.__property: property = prop
-        self.__name: str = name
         self.__descriptive_name: str = metadata.name if metadata.name is not None else name
-        self.__order: Optional[int] = metadata.order
-        self.__default_value: Optional[Any] = metadata.default_value
-        self.__hints: Optional[str] = metadata.hints
-        self.__hidden: Optional[bool] = metadata.hidden
-
-    @property
-    def id(self) -> str:
-        return self.__id
-
-    @property
-    def name(self) -> str:
-        return self.__name
 
     @property
     def descriptive_name(self) -> str:
         return self.__descriptive_name
 
     @property
-    def order(self) -> Optional[int]:
-        return self.__order
-
-    @property
     def prop(self) -> property:
         return self.__property
 
-    @property
-    def default_value(self) -> Optional[Any]:
-        return self.__default_value
+    def get_value(self, instance: Any) -> Any:
+        return self.__property.fget(instance)
 
-    @property
-    def hints(self) -> Optional[str]:
-        return self.__hints
-
-    @property
-    def hidden(self) -> Optional[bool]:
-        return self.__hidden
+    def set_value(self, instance: Any, value: Any):
+        self.__property.fset(instance, value)
 
     def __str__(self):
         return f"{self.name} (id={self.id}, name={self.descriptive_name}, order={self.order}," \
