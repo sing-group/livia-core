@@ -82,11 +82,10 @@ class FrameProcessor(ABC):
             if not self._check_running_status():
                 break
 
-            with self._input_lock:
-                self._num_frame, frame = self._input.next_frame()
+            frame = self._input_frame()
 
-                if self._num_frame is None or frame is None:
-                    break
+            if self._num_frame is None or frame is None:
+                break
 
             if not self._check_running_status():
                 break
@@ -121,18 +120,23 @@ class FrameProcessor(ABC):
             else:
                 return True
 
-    def _input_frame(self):
+    def _input_frame(self) -> ndarray:
         with self._input_lock:
-            self._num_frame, frame = self._input.next_frame()
+            input = self._input
 
-            self._notify_process_change_event(ProcessChangeListener.frame_inputted)
+        self._num_frame, frame = input.next_frame()
+
+        self._notify_process_change_event(ProcessChangeListener.frame_inputted)
+
+        return frame
 
     def _output_frame(self, frame: ndarray):
         with self._output_lock:
-            if self._check_running_status():
-                self._output.output_frame(self._num_frame, frame)
+            output = self._output
 
-                self._notify_process_change_event(ProcessChangeListener.frame_outputted)
+        output.output_frame(self._num_frame, frame)
+
+        self._notify_process_change_event(ProcessChangeListener.frame_outputted)
 
     def pause(self):
         with self._running_condition:

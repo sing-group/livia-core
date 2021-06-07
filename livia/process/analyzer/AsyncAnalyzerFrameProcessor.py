@@ -11,7 +11,8 @@ from livia.process.analyzer.modification.FrameModification import FrameModificat
 
 
 class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
-    def __init__(self, input: FrameInput, output: FrameOutput, frame_analyzer: FrameAnalyzer, daemon: bool = True):
+    def __init__(self, input: FrameInput, output: FrameOutput, frame_analyzer: FrameAnalyzer,
+                 modification_persistence: int = 0, daemon: bool = True):
         super().__init__(input, output, frame_analyzer, daemon)
 
         self._analyzer_thread: Optional[Thread] = None
@@ -19,8 +20,11 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
         self._current_frame: Optional[ndarray] = None
         self._current_num_frame: Optional[int] = None
 
+        self._modification_persistence: int = modification_persistence
+
         self._frame_analyzer_lock: Lock = Lock()
         self._current_modification: Optional[FrameModification] = None
+        self._current_modification_count: int = 0
         self._current_modification_lock: Lock = Lock()
         self._modification_condition: Condition = Condition(lock=Lock())
 
@@ -44,7 +48,11 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
 
         with self._current_modification_lock:
             modification = self._current_modification
-            self._current_modification = None
+            if self._current_modification_count == self._modification_persistence:
+                self._current_modification = None
+                self._current_modification_count = 0
+            else:
+                self._current_modification_count += 1
 
         return modification.modify(self._num_frame, frame) if modification is not None else frame
 
@@ -66,12 +74,13 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
             with self._modification_condition:
                 self._modification_condition.wait()
                 if self._alive:
-                    with self._frame_analyzer_lock:
-                        num_frame = self._current_num_frame
-                        frame = self._current_frame
-                        frame_analyzer = self._frame_analyzer
+                    num_frame = self._current_num_frame
+                    frame = self._current_frame
                 else:
                     break
+
+            with self._frame_analyzer_lock:
+                frame_analyzer = self._frame_analyzer
 
             if self._alive:
                 modification = frame_analyzer.analyze(num_frame, frame)
@@ -81,6 +90,7 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
             if self._alive:
                 with self._current_modification_lock:
                     self._current_modification = modification
+                    self._current_modification_count = 0
             else:
                 break
 
