@@ -5,15 +5,16 @@ from numpy import ndarray
 
 
 class FrameInput(ABC):
-    def play(self):
+    def play(self) -> None:
         pass
 
+    @abstractmethod
     def get_current_frame(self) -> Optional[ndarray]:
         raise NotImplementedError()
 
     @abstractmethod
     def get_current_frame_index(self) -> Optional[int]:
-        pass
+        raise NotImplementedError()
 
     def get_current_msec(self) -> Optional[int]:
         frame_index = self.get_current_frame_index()
@@ -32,5 +33,5 @@ class FrameInput(ABC):
     def get_frame_size(self) -> Tuple[int, int]:
         raise NotImplementedError()
 
-    def close(self):
+    def close(self) -> None:
         pass
