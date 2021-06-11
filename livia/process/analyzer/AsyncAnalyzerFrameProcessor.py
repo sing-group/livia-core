@@ -1,5 +1,5 @@
 from threading import Thread, Lock, Condition
-from typing import Optional
+from typing import Optional, Tuple
 
 from numpy import ndarray
 
@@ -17,14 +17,12 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
 
         self._analyzer_thread: Optional[Thread] = None
 
-        self._current_frame: Optional[ndarray] = None
-        self._current_num_frame: Optional[int] = None
-
         self._modification_persistence: int = modification_persistence
 
+        self._current_frame: Optional[Tuple[Optional[int], Optional[ndarray]]] = None
+        self._current_modification: Optional[Tuple[FrameModification, int]] = None
+
         self._frame_analyzer_lock: Lock = Lock()
-        self._current_modification: Optional[FrameModification] = None
-        self._current_modification_count: int = 0
         self._current_modification_lock: Lock = Lock()
         self._modification_condition: Condition = Condition(lock=Lock())
 
@@ -36,8 +34,7 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
 
     def _process_frame(self, frame: ndarray):
         with self._modification_condition:
-            self._current_frame = frame
-            self._current_num_frame = self._num_frame
+            self._current_frame = [self._num_frame, frame]
             self._modification_condition.notify()
 
         super()._process_frame(frame)
@@ -48,13 +45,13 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
 
         with self._current_modification_lock:
             modification = self._current_modification
-            if self._current_modification_count == self._modification_persistence:
-                self._current_modification = None
-                self._current_modification_count = 0
-            else:
-                self._current_modification_count += 1
+            if modification is not None:
+                if modification[1] == self._modification_persistence:
+                    self._current_modification = None
+                else:
+                    modification[1] += 1
 
-        return modification.modify(self._num_frame, frame) if modification is not None else frame
+        return modification[0].modify(self._num_frame, frame) if modification is not None else frame
 
     def _on_start(self):
         self._analyzer_thread = Thread(target=self._analyze_frame, daemon=True, name="Asynchronous Analyzer Thread")
@@ -71,26 +68,24 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
 
     def _analyze_frame(self):
         while True:
+
             with self._modification_condition:
-                self._modification_condition.wait()
-                if self._alive:
-                    num_frame = self._current_num_frame
-                    frame = self._current_frame
-                else:
-                    break
+                if self._current_frame is None:
+                    self._modification_condition.wait()
+                frame = self._current_frame
+                self._current_frame = None
 
             with self._frame_analyzer_lock:
                 frame_analyzer = self._frame_analyzer
 
             if self._alive:
-                modification = frame_analyzer.analyze(num_frame, frame)
+                modification = frame_analyzer.analyze(*frame)
             else:
                 break
 
             if self._alive:
                 with self._current_modification_lock:
-                    self._current_modification = modification
-                    self._current_modification_count = 0
+                    self._current_modification = [modification, 0]
             else:
                 break
 
