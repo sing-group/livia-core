@@ -21,11 +21,25 @@ class ObjectDetectorFrameAnalyzer(CompositeFrameAnalyzer, HasThreshold):
                  max_threshold: float = 1.0,
                  threshold_step: float = 0.01,
                  box_color: Tuple[int, int, int] = DEFAULT_BOX_COLOR,
+                 box_thickness: int = 5,
+                 show_scores: bool = False,
+                 show_class_names: bool = False,
                  child: FrameAnalyzer = NoChangeFrameAnalyzer()):
         HasThreshold.__init__(self, initial_threshold, min_threshold, max_threshold, threshold_step)
         CompositeFrameAnalyzer.__init__(self, child)
 
         self._box_color: Tuple[int, int, int] = box_color
+        self._box_thickness: int = box_thickness
+        self._show_scores: bool = show_scores
+        self._show_class_names: bool = show_class_names
+
+    @livia_property(id="box-thickness", name="Box thickness", default_value=5)
+    def box_thickness(self) -> int:
+        return self._box_thickness
+
+    @box_thickness.setter
+    def box_thickness(self, box_thickness: int = 5):
+        self._box_thickness = box_thickness
 
     @livia_property(id="box-color", name="Box color", default_value=DEFAULT_BOX_COLOR)
     def box_color(self) -> Tuple[int, int, int]:
@@ -34,6 +48,22 @@ class ObjectDetectorFrameAnalyzer(CompositeFrameAnalyzer, HasThreshold):
     @box_color.setter  # type: ignore
     def box_color(self, box_color: Tuple[int, int, int]):
         self._box_color = box_color
+
+    @livia_property(id="show-scores", name="Show scores", default_value=False)
+    def show_scores(self) -> bool:
+        return self._show_scores
+
+    @show_scores.setter  # type: ignore
+    def show_scores(self, show_scores: bool):
+        self._show_scores = show_scores
+
+    @livia_property(id="show-class-names", name="Show class names", default_value=False)
+    def show_class_names(self) -> bool:
+        return self._show_class_names
+
+    @show_class_names.setter  # type: ignore
+    def show_class_names(self, show_class_labels: bool):
+        self._show_class_names = show_class_labels
 
     def _composite_analyze(self, num_frame: int, frame: ndarray,
                            child_modification: FrameModification) -> ObjectDetectionFrameModification:
@@ -45,4 +75,7 @@ class ObjectDetectorFrameAnalyzer(CompositeFrameAnalyzer, HasThreshold):
 
     def _create_modification(self, objects: FrameObjectDetection,
                              child_modification: FrameModification) -> ObjectDetectionFrameModification:
-        return ObjectDetectionFrameModification(objects, self.threshold, self._box_color, child_modification)
+        return ObjectDetectionFrameModification(objects, self.threshold,
+                                                self._box_color, self._box_thickness,
+                                                self._show_scores, self._show_class_names,
+                                                child=child_modification)

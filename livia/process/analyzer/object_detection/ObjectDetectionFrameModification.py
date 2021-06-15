@@ -16,11 +16,17 @@ class ObjectDetectionFrameModification(CompositeFrameModification):
                  frame_detection: FrameObjectDetection,
                  score_threshold: Optional[float] = None,
                  box_color: Tuple[int, int, int] = DEFAULT_BOX_COLOR,
+                 box_thickness: int = 5,
+                 show_scores: bool = False,
+                 show_class_names: bool = False,
                  child: FrameModification = NoFrameModification()):
         super().__init__(child)
         self._frame_detection: FrameObjectDetection = frame_detection
         self._score_threshold: Optional[float] = score_threshold
         self._box_color: Tuple[int, int, int] = box_color
+        self._box_thickness: int = box_thickness
+        self._show_scores: bool = show_scores
+        self._show_class_names: bool = show_class_names
 
     def _composite_modify(self, num_frame: int, frame: ndarray) -> ndarray:
         self._pre_draw(num_frame, frame)
@@ -37,7 +43,7 @@ class ObjectDetectionFrameModification(CompositeFrameModification):
             return self._frame_detection.objects
         else:
             return [detected_object for detected_object in self._frame_detection.objects if
-                    detected_object.has_score() and detected_object.score >= self._score_threshold] # type: ignore
+                    detected_object.has_score() and detected_object.score >= self._score_threshold]  # type: ignore
 
     def _pre_draw(self, num_frame: int, frame: ndarray):
         pass
@@ -48,16 +54,16 @@ class ObjectDetectionFrameModification(CompositeFrameModification):
     def _draw_object(self, num_frame: int, frame: ndarray, detected_object: DetectedObject):
         location = detected_object.location
 
-        if detected_object.has_score():
+        if self._show_scores and detected_object.has_score():
             cv2.putText(frame,
                         str(detected_object.score)[1:5],
                         location.adjust_coord0(),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255, 2)
 
-        if detected_object.has_class_name():
+        if self._show_class_names and detected_object.has_class_name():
             cv2.putText(frame,
                         detected_object.class_name,
                         location.adjust_coord0(lambda x: x + 50, lambda y: y + 20),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255, 2)
 
-        cv2.rectangle(frame, location.adjust_coord0(), location.adjust_coord1(), self._box_color, 5)
+        cv2.rectangle(frame, location.adjust_coord0(), location.adjust_coord1(), self._box_color, self._box_thickness)

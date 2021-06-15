@@ -1,5 +1,6 @@
+import time
 from threading import Thread, Lock, Condition
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 from numpy import ndarray
 
@@ -12,10 +13,10 @@ from livia.process.analyzer.modification.FrameModification import FrameModificat
 
 class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
     def __init__(self, input: FrameInput, output: FrameOutput, frame_analyzer: FrameAnalyzer,
-                 modification_persistence: int = 0, daemon: bool = True):
+                 modification_persistence: int = 0, num_threads: int = 1, daemon: bool = True):
         super().__init__(input, output, frame_analyzer, daemon)
 
-        self._analyzer_thread: Optional[Thread] = None
+        self._analyzer_thread: List[Optional[Thread]] = [None] * num_threads
 
         self._modification_persistence: int = modification_persistence
 
@@ -24,7 +25,7 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
 
         self._frame_analyzer_lock: Lock = Lock()
         self._current_modification_lock: Lock = Lock()
-        self._modification_condition: Condition = Condition(lock=Lock())
+        self._current_frame_condition: Condition = Condition(lock=Lock())
 
     @AnalyzerFrameProcessor.frame_analyzer.setter
     def frame_analyzer(self, frame_analyzer: FrameAnalyzer):
@@ -33,9 +34,9 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
                 AnalyzerFrameProcessor.frame_analyzer.fset(self, frame_analyzer)
 
     def _process_frame(self, frame: ndarray):
-        with self._modification_condition:
+        with self._current_frame_condition:
             self._current_frame = [self._num_frame, frame]
-            self._modification_condition.notify()
+            self._current_frame_condition.notify()
 
         super()._process_frame(frame)
 
@@ -54,24 +55,26 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
         return modification[0].modify(self._num_frame, frame) if modification is not None else frame
 
     def _on_start(self):
-        self._analyzer_thread = Thread(target=self._analyze_frame, daemon=True, name="Asynchronous Analyzer Thread")
-        self._analyzer_thread.start()
+        if self._analyzer_thread[0] is None:
+            for i in range(0, len(self._analyzer_thread)):
+                self._analyzer_thread[i] = Thread(target=self._analyze_frame, daemon=self._daemon, name="Asynchronous Analyzer Thread")
+                self._analyzer_thread[i].start()
 
     def _on_stop(self):
-        with self._modification_condition:
-            self._modification_condition.notify()
+        with self._current_frame_condition:
+            self._current_frame_condition.notify_all()
 
     def stop_and_join(self):
-        thread = self._analyzer_thread
+        threads = self._analyzer_thread
         super().stop_and_wait()
-        thread.join()
+        for thread in threads:
+            thread.join()
 
     def _analyze_frame(self):
         while True:
-
-            with self._modification_condition:
+            with self._current_frame_condition:
                 if self._current_frame is None:
-                    self._modification_condition.wait()
+                    self._current_frame_condition.wait()
                 frame = self._current_frame
                 self._current_frame = None
 
@@ -89,4 +92,5 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
             else:
                 break
 
-        self._analyzer_thread = None
+        for i in range(0, len(self._analyzer_thread)):
+            self._analyzer_thread[i] = None
