@@ -40,20 +40,21 @@ class FileFrameInput(OpenCVFrameInput, SeekableFrameInput):
                     self._current_frame = None
                     num_frame = None
 
-            if self.__last_frame_time > 0:
-                elapsed = time.time() - self.__last_frame_time
+            if self.__delay > 0:
+                if self.__last_frame_time > 0:
+                    elapsed = time.time() - self.__last_frame_time
 
-                # Skips frames that could not be shown due to an inter-call time greater than the frame time
-                while elapsed > self.__delay:
-                    LIVIA_LOGGER.warning(f"Frame skipped (elapsed: {elapsed}, delay: {self.__delay})")
-                    elapsed -= self.__delay
-                    if not self._capture.grab():
-                        break
+                    # Skips frames that could not be shown due to an inter-call time greater than the frame time
+                    while elapsed > self.__delay:
+                        LIVIA_LOGGER.warning(f"Frame skipped (elapsed: {elapsed}, delay: {self.__delay})")
+                        elapsed -= self.__delay
+                        if not self._capture.grab():
+                            break
 
-                if elapsed < self.__delay:
-                    time.sleep(self.__delay - elapsed)
+                    if elapsed < self.__delay:
+                        time.sleep(self.__delay - elapsed)
 
-            self.__last_frame_time = time.time()
+                self.__last_frame_time = time.time()
 
             return (num_frame, self._current_frame) if ret else (None, None)
         else:
