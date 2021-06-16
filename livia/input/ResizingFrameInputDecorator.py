@@ -1,6 +1,4 @@
-from __future__ import annotations
-
-from typing import Optional, Tuple, TYPE_CHECKING
+from typing import Optional, Tuple
 
 from numpy import ndarray, ascontiguousarray
 
@@ -8,15 +6,13 @@ from livia.input.FrameInput import FrameInput
 from livia.input.FrameInputDecorator import FrameInputDecorator
 from livia.input.SeekableFrameInput import SeekableFrameInput
 
-if TYPE_CHECKING:
-    from livia.input.SeekableResizingFrameInputDecorator import SeekableResizingFrameInputDecorator
-
 
 class ResizingFrameInputDecorator(FrameInputDecorator):
     @staticmethod
     def decorate(decorated_input: FrameInput, new_size: Tuple[int, int],
                  offset: Optional[Tuple[int, int]] = None) -> "ResizingFrameInputDecorator":
         if isinstance(decorated_input, SeekableFrameInput):
+            from livia.input.SeekableResizingFrameInputDecorator import SeekableResizingFrameInputDecorator
             return SeekableResizingFrameInputDecorator(decorated_input, new_size, offset)
         else:
             return ResizingFrameInputDecorator(decorated_input, new_size, offset)
