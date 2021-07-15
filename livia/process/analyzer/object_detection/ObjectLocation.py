@@ -37,8 +37,16 @@ class ObjectLocation:
         return self.x0, self.y0, self.x0, self.x1
 
     @property
+    def height(self) -> float:
+        return self.__y1 - self.__y0
+
+    @property
+    def width(self) -> float:
+        return self.__x1 - self.__x0
+
+    @property
     def area(self) -> float:
-        return (self.x1 - self.x0) * (self.y1 - self.y0)
+        return self.width * self.height
 
     def adjust_coord0(self,
                       x_adjustment: Callable[[float], float] = lambda x: x,
