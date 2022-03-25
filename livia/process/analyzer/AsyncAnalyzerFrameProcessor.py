@@ -1,8 +1,7 @@
-import time
 from threading import Thread, Lock, Condition
-from typing import Optional, Tuple, List
 
 from numpy import ndarray
+from typing import Optional, Tuple, List
 
 from livia.input.FrameInput import FrameInput
 from livia.output.FrameOutput import FrameOutput
@@ -10,10 +9,18 @@ from livia.process.analyzer.AnalyzerFrameProcessor import AnalyzerFrameProcessor
 from livia.process.analyzer.FrameAnalyzer import FrameAnalyzer
 from livia.process.analyzer.modification.FrameModification import FrameModification
 
+DEFAULT_MODIFICATION_PERSISTENCE: int = 0
+DEFAULT_NUM_THREADS: int = 1
+
 
 class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
-    def __init__(self, input: FrameInput, output: FrameOutput, frame_analyzer: FrameAnalyzer,
-                 modification_persistence: int = 0, num_threads: int = 1, daemon: bool = True):
+    def __init__(self,
+                 input: FrameInput,
+                 output: FrameOutput,
+                 frame_analyzer: FrameAnalyzer,
+                 modification_persistence: int = DEFAULT_MODIFICATION_PERSISTENCE,
+                 num_threads: int = DEFAULT_NUM_THREADS,
+                 daemon: bool = True):
         super().__init__(input, output, frame_analyzer, daemon)
 
         self._analyzer_thread: List[Optional[Thread]] = [None] * num_threads
@@ -57,7 +64,8 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
     def _on_start(self):
         if self._analyzer_thread[0] is None:
             for i in range(0, len(self._analyzer_thread)):
-                self._analyzer_thread[i] = Thread(target=self._analyze_frame, daemon=self._daemon, name="Asynchronous Analyzer Thread")
+                self._analyzer_thread[i] = Thread(target=self._analyze_frame, daemon=self._daemon,
+                                                  name="Asynchronous Analyzer Thread")
                 self._analyzer_thread[i].start()
 
     def _on_stop(self):
