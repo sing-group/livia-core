@@ -23,16 +23,12 @@ class OpenCVFrameInput(FrameInput):
                     num_frame = int(self._capture.get(CAP_PROP_POS_FRAMES))
                     ret, self._current_frame = self._capture.read()
                 else:
-                    self._current_frame = None
-                    return None, None
-
+                    ret = False
             if ret:
                 return num_frame, self._current_frame
-            else:
-                self._current_frame = None
-                return None, None
-        else:
-            return None, None
+
+        self._current_frame = None
+        return None, None
 
     def get_current_frame(self) -> Optional[ndarray]:
         return self._current_frame
