@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 
 from numpy import ndarray
 
@@ -7,7 +7,7 @@ from livia.process.analyzer.NoChangeFrameAnalyzer import NoChangeFrameAnalyzer
 from livia.process.analyzer.modification.FrameModification import FrameModification
 
 
-class CompositeFrameAnalyzer(FrameAnalyzer):
+class CompositeFrameAnalyzer(FrameAnalyzer, ABC):
     def __init__(self, child: FrameAnalyzer = NoChangeFrameAnalyzer()):
         self._child: FrameAnalyzer = child
 

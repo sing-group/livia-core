@@ -1,4 +1,5 @@
-from typing import List, Optional, Set
+from itertools import groupby
+from typing import List, Optional, Set, Dict
 
 from numpy import ndarray
 
@@ -36,6 +37,11 @@ class FrameObjectDetection:
     @property
     def objects(self) -> List[DetectedObject]:
         return self.__objects.copy()
+
+    def get_objects_by_class(self) -> Dict[Optional[str], Set[DetectedObject]]:
+        sorted_objects = sorted(self.__objects, key=lambda o: o.class_name if o.class_name is not None else "")
+
+        return {key: set(group) for key, group in groupby(sorted_objects, key=lambda o: o.class_name)}
 
     def has_objects(self) -> bool:
         return len(self.__objects) > 0

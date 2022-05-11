@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="livia-core",
-    version="0.1.dev62",
+    version="0.1.dev63",
     author="Fernando Campos Tato, Miguel Reboiro-Jato, Daniel Glez-Peña, Florentino Fdez-Riverola, Rubén Domínguez Carbajales, Hugo López-Fdez, Alba Nogueira-Rodríguez",
     author_email="fctato@esei.uvigo.es, mrjato@uvigo.es, dgpena@uvigo.es, riverola@uvigo.es, RUBEN.DOMINGUEZ.CARBAJALES@sergas.es, hlfernandez@uvigo.es, alnogueira@uvigo.es",
     description="Live Video Analysis framework.",
@@ -21,7 +21,8 @@ setuptools.setup(
         'dev': [
             'pyroma==3.2',
             'mypy==0.931',
-            'twine==3.8.0'
+            'twine==3.8.0',
+            'packaging==21.3'
         ]
     },
     classifiers=[

@@ -9,7 +9,7 @@ from livia.process.analyzer.FrameAnalyzer import FrameAnalyzer
 from livia.process.analyzer.HasThreshold import HasThreshold
 from livia.process.analyzer.NoChangeFrameAnalyzer import NoChangeFrameAnalyzer
 from livia.process.analyzer.modification.FrameModification import FrameModification
-from livia.process.analyzer.object_detection import DEFAULT_BOX_COLOR
+from livia.process.analyzer import DEFAULT_BOX_COLOR, DEFAULT_BOX_THICKNESS
 from livia.process.analyzer.object_detection.FrameObjectDetection import FrameObjectDetection
 from livia.process.analyzer.object_detection.ObjectDetectionFrameModification import ObjectDetectionFrameModification
 
@@ -21,7 +21,7 @@ class ObjectDetectorFrameAnalyzer(CompositeFrameAnalyzer, HasThreshold):
                  max_threshold: float = 1.0,
                  threshold_step: float = 0.01,
                  box_color: Tuple[int, int, int] = DEFAULT_BOX_COLOR,
-                 box_thickness: int = 5,
+                 box_thickness: int = DEFAULT_BOX_THICKNESS,
                  show_scores: bool = False,
                  show_class_names: bool = False,
                  child: FrameAnalyzer = NoChangeFrameAnalyzer()):
@@ -33,12 +33,12 @@ class ObjectDetectorFrameAnalyzer(CompositeFrameAnalyzer, HasThreshold):
         self._show_scores: bool = show_scores
         self._show_class_names: bool = show_class_names
 
-    @livia_property(id="box-thickness", name="Box thickness", default_value=5)
+    @livia_property(id="box-thickness", name="Box thickness", default_value=DEFAULT_BOX_THICKNESS)
     def box_thickness(self) -> int:
         return self._box_thickness
 
     @box_thickness.setter
-    def box_thickness(self, box_thickness: int = 5):
+    def box_thickness(self, box_thickness: int):
         self._box_thickness = box_thickness
 
     @livia_property(id="box-color", name="Box color", default_value=DEFAULT_BOX_COLOR)

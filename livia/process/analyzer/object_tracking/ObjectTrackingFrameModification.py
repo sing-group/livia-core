@@ -1,28 +1,26 @@
-from typing import Optional, List, Tuple
+from typing import List, Tuple
 
 import cv2
 from numpy import ndarray
 
+from livia.process.analyzer import DEFAULT_BOX_COLOR, DEFAULT_BOX_THICKNESS
 from livia.process.analyzer.modification.CompositeFrameModification import CompositeFrameModification
 from livia.process.analyzer.modification.FrameModification import FrameModification
 from livia.process.analyzer.modification.NoFrameModification import NoFrameModification
-from livia.process.analyzer import DEFAULT_BOX_COLOR, DEFAULT_BOX_THICKNESS
 from livia.process.analyzer.object_detection.DetectedObject import DetectedObject
-from livia.process.analyzer.object_detection.FrameObjectDetection import FrameObjectDetection
+from livia.process.analyzer.object_tracking.TrackedObjects import TrackedObjects
 
 
-class ObjectDetectionFrameModification(CompositeFrameModification):
+class ObjectTrackingFrameModification(CompositeFrameModification):
     def __init__(self,
-                 frame_detection: FrameObjectDetection,
-                 score_threshold: Optional[float] = None,
+                 tracked_objects: TrackedObjects,
                  box_color: Tuple[int, int, int] = DEFAULT_BOX_COLOR,
                  box_thickness: int = DEFAULT_BOX_THICKNESS,
                  show_scores: bool = False,
                  show_class_names: bool = False,
                  child: FrameModification = NoFrameModification()):
         super().__init__(child)
-        self._frame_detection: FrameObjectDetection = frame_detection
-        self._score_threshold: Optional[float] = score_threshold
+        self._tracked_objects: TrackedObjects = tracked_objects
         self._box_color: Tuple[int, int, int] = box_color
         self._box_thickness: int = box_thickness
         self._show_scores: bool = show_scores
@@ -39,11 +37,8 @@ class ObjectDetectionFrameModification(CompositeFrameModification):
         return frame
 
     def _get_objects_to_draw(self, num_frame: int, frame: ndarray) -> List[DetectedObject]:
-        if self._score_threshold is None:
-            return self._frame_detection.objects
-        else:
-            return [detected_object for detected_object in self._frame_detection.objects if
-                    detected_object.has_score() and detected_object.score >= self._score_threshold]  # type: ignore
+        return [tracked_object.last_frame_consensus for tracked_object in self._tracked_objects.tracked_objects if
+                tracked_object.last_frame_consensus is not None]
 
     def _pre_draw(self, num_frame: int, frame: ndarray):
         pass

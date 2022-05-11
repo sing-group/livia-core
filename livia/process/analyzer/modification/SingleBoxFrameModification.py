@@ -6,7 +6,7 @@ from numpy import ndarray
 from livia.process.analyzer.modification.CompositeFrameModification import CompositeFrameModification
 from livia.process.analyzer.modification.FrameModification import FrameModification
 from livia.process.analyzer.modification.NoFrameModification import NoFrameModification
-from livia.process.analyzer.object_detection import DEFAULT_BOX_COLOR, DEFAULT_BOX_THICKNESS
+from livia.process.analyzer import DEFAULT_BOX_COLOR, DEFAULT_BOX_THICKNESS
 
 
 class SingleBoxFrameModification(CompositeFrameModification):

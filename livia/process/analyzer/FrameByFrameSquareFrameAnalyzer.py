@@ -10,7 +10,7 @@ from livia.process.analyzer.NoChangeFrameAnalyzer import NoChangeFrameAnalyzer
 from livia.process.analyzer.modification.FrameModification import FrameModification
 from livia.process.analyzer.modification.NoFrameModification import NoFrameModification
 from livia.process.analyzer.modification.SingleBoxFrameModification import SingleBoxFrameModification
-from livia.process.analyzer.object_detection import DEFAULT_BOX_COLOR, DEFAULT_BOX_THICKNESS
+from livia.process.analyzer import DEFAULT_BOX_COLOR, DEFAULT_BOX_THICKNESS
 
 X_STEP = 5
 Y_STEP = 5
