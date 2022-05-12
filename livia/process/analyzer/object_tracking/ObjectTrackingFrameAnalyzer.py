@@ -1,4 +1,5 @@
 from abc import abstractmethod, ABC
+from copy import copy
 from typing import Tuple, Optional
 
 from numpy import ndarray
@@ -37,7 +38,7 @@ class ObjectTrackingFrameAnalyzer(CompositeFrameAnalyzer, ABC):
     def window_size(self) -> int:
         return self._window_size
 
-    @window_size.setter
+    @window_size.setter  # type: ignore
     def window_size(self, window_size: int = 50):
         self._window_size = window_size
 
@@ -45,7 +46,7 @@ class ObjectTrackingFrameAnalyzer(CompositeFrameAnalyzer, ABC):
     def box_thickness(self) -> int:
         return self._box_thickness
 
-    @box_thickness.setter
+    @box_thickness.setter  # type: ignore
     def box_thickness(self, box_thickness: int = 5):
         self._box_thickness = box_thickness
 
@@ -73,12 +74,17 @@ class ObjectTrackingFrameAnalyzer(CompositeFrameAnalyzer, ABC):
     def show_class_names(self, show_class_labels: bool):
         self._show_class_names = show_class_labels
 
-    def _composite_analyze(self, num_frame: int, frame: ndarray,
-                           child_modification: FrameModification) -> ObjectTrackingFrameModification:
+    def process_frame(self, num_frame: int, frame: ndarray, update: bool = True) -> TrackedObjects:
         objects_in_frame = self._detect_objects_in_frame(num_frame, frame)
         intra_frame_detections = self._group_intra_frame_objects(num_frame, objects_in_frame)
-        self._tracked_objects = self._group_inter_frame_objects(num_frame, intra_frame_detections,
-                                                                self._tracked_objects)
+
+        tracked_objects = self._tracked_objects if update else copy(self._tracked_objects)
+
+        return self._group_inter_frame_objects(num_frame, intra_frame_detections, tracked_objects)
+
+    def _composite_analyze(self, num_frame: int, frame: ndarray,
+                           child_modification: FrameModification) -> ObjectTrackingFrameModification:
+        self._tracked_objects = self.process_frame(num_frame, frame)
 
         return self._create_modification(self._tracked_objects, child_modification)
 

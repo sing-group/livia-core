@@ -1,5 +1,6 @@
-from collections import deque
-from typing import Deque, List, Optional
+from collections import deque, Counter
+from copy import deepcopy, copy
+from typing import Deque, List, Optional, Union, Iterable
 
 from livia.process.analyzer.object_detection.DetectedObject import DetectedObject
 from livia.process.analyzer.object_tracking.DetectedObjectGroup import DetectedObjectGroup
@@ -9,8 +10,22 @@ _EMPTY_DETECTED_OBJECT_GROUP: DetectedObjectGroup = DetectedObjectGroup()
 
 
 class TrackedObject:
-    def __init__(self, initial_detection: FrameDetectedObjectGroup, window_size: int):
-        self.__detection_by_frame: Deque[FrameDetectedObjectGroup] = deque([initial_detection], window_size)
+    def __init__(self,
+                 initial_detection: Union[FrameDetectedObjectGroup, Iterable[FrameDetectedObjectGroup]],
+                 window_size: int):
+        if isinstance(initial_detection, Iterable):
+            if len(initial_detection) == 0:
+                raise ValueError("At least one object group must be provided")
+
+            if len(Counter(obj.class_name for obj in initial_detection)) != 1:
+                raise ValueError("Objects must have the same class")
+
+            detections = initial_detection
+            initial_detection = initial_detection[0]
+        else:
+            detections = [initial_detection]
+
+        self.__detection_by_frame: Deque[FrameDetectedObjectGroup] = deque(detections, window_size)
         self.__class_name: Optional[str] = initial_detection.class_name
         self.__window_size: int = window_size
 
@@ -83,3 +98,15 @@ class TrackedObject:
     def count_object_detections(self) -> int:
         return len([detection for detection in self.__detection_by_frame if
                    detection.object_group != _EMPTY_DETECTED_OBJECT_GROUP])
+
+    def __copy__(self):
+        return TrackedObject(
+            copy(self.__detection_by_frame),
+            self.__window_size
+        )
+
+    def __deepcopy__(self, memodict={}):
+        return TrackedObject(
+            deepcopy(self.__detection_by_frame, memodict),
+            self.__window_size
+        )

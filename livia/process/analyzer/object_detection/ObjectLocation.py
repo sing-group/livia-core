@@ -99,3 +99,9 @@ class ObjectLocation:
                               min(self.y0, location.y0),
                               max(self.x1, location.x1),
                               max(self.y1, location.y1))
+
+    def __copy__(self):
+        return self
+
+    def __deepcopy__(self, memodict={}):
+        return ObjectLocation(self.__x0, self.__y0, self.__x1, self.__y1)

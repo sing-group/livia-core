@@ -37,7 +37,7 @@ class ObjectDetectorFrameAnalyzer(CompositeFrameAnalyzer, HasThreshold):
     def box_thickness(self) -> int:
         return self._box_thickness
 
-    @box_thickness.setter
+    @box_thickness.setter  # type: ignore
     def box_thickness(self, box_thickness: int):
         self._box_thickness = box_thickness
 

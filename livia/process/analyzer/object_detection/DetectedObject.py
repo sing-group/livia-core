@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Optional
 
 from livia.process.analyzer.object_detection.ObjectLocation import ObjectLocation
@@ -26,3 +27,13 @@ class DetectedObject:
 
     def has_score(self) -> bool:
         return self.score is not None
+
+    def __copy__(self):
+        return self
+
+    def __deepcopy__(self, memodict={}):
+        return DetectedObject(
+            deepcopy(self.__location, memodict),
+            self.__class_name,
+            self.__score
+        )

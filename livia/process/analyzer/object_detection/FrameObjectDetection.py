@@ -1,13 +1,15 @@
+from copy import deepcopy, copy
 from itertools import groupby
-from typing import List, Optional, Set, Dict
+from typing import List, Optional, Set, Dict, Iterable
 
+import numpy as np
 from numpy import ndarray
 
 from livia.process.analyzer.object_detection.DetectedObject import DetectedObject
 
 
 class FrameObjectDetection:
-    def __init__(self, frame: ndarray, objects: List[DetectedObject], class_names: Optional[Set[str]] = None):
+    def __init__(self, frame: ndarray, objects: Iterable[DetectedObject], class_names: Optional[Set[str]] = None):
         self.__frame: ndarray = frame
         self.__objects: List[DetectedObject] = list(objects)
         self.__class_names: Optional[Set[str]] = None
@@ -56,3 +58,17 @@ class FrameObjectDetection:
             raise ValueError("Detection objects must share the same classes")
 
         return FrameObjectDetection(self.__frame, self.__objects + detection.objects, self.__class_names)
+
+    def __copy__(self, memodict={}):
+        return FrameObjectDetection(
+            np.copy(self.__frame),
+            copy(self.__objects),
+            self.__class_names
+        )
+
+    def __deepcopy__(self, memodict={}):
+        return FrameObjectDetection(
+            np.copy(self.__frame),
+            deepcopy(self.__objects, memodict),
+            self.__class_names
+        )

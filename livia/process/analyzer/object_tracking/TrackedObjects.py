@@ -1,4 +1,5 @@
-from typing import Set, Callable, List, Tuple, Optional, Union
+from copy import deepcopy, copy
+from typing import Set, Callable, List, Tuple, Optional, Union, Iterable, FrozenSet
 
 from livia.process.analyzer.object_tracking.DetectedObjectGroup import DetectedObjectGroup
 from livia.process.analyzer.object_tracking.FrameDetectedObjectGroup import FrameDetectedObjectGroup
@@ -6,13 +7,13 @@ from livia.process.analyzer.object_tracking.TrackedObject import TrackedObject
 
 
 class TrackedObjects:
-    def __init__(self, tracked_objects: Set[TrackedObject] = set(), window_size: int = 50):
-        self.__tracked_objects: Set[TrackedObject] = tracked_objects
+    def __init__(self, tracked_objects: Iterable[TrackedObject] = set(), window_size: int = 50):
+        self.__tracked_objects: Set[TrackedObject] = set(tracked_objects)
         self.__window_size: int = window_size
 
     @property
-    def tracked_objects(self) -> Set[TrackedObject]:
-        return self.__tracked_objects
+    def tracked_objects(self) -> FrozenSet[TrackedObject]:
+        return frozenset(self.__tracked_objects)
 
     def add(self, tracked_object: TrackedObject) -> None:
         self.__tracked_objects.add(tracked_object)
@@ -52,3 +53,15 @@ class TrackedObjects:
                 self.__tracked_objects.remove(tracked_object)
             elif remove_invalid and not tracked_object.has_object_detections():
                 self.__tracked_objects.remove(tracked_object)
+
+    def __copy__(self):
+        return TrackedObjects(
+            copy(self.__tracked_objects),
+            self.__window_size
+        )
+
+    def __deepcopy__(self, memodict={}):
+        return TrackedObjects(
+            deepcopy(self.__tracked_objects),
+            self.__window_size
+        )
