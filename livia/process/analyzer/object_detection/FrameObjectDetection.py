@@ -17,14 +17,14 @@ class FrameObjectDetection:
         if class_names:
             self.__class_names = set(class_names)
         elif all([obj.has_class_name() for obj in objects]):
-            self.__class_names = set([obj.class_name for obj in objects if obj.class_name is not None])
+            self.__class_names = set(obj.class_name for obj in objects if obj.class_name is not None)
         elif any([obj.has_class_name() for obj in objects]):
             raise ValueError("Objects with and without class can't be combined")
 
         if self.__class_names:
-            if len(objects) > 0 and self.__class_names != set([obj.class_name for obj in objects]):
+            if len(objects) > 0 and self.__class_names != set(obj.class_name for obj in objects):
                 cn = self.__class_names
-                ocn = set([obj.class_name for obj in objects])
+                ocn = set(obj.class_name for obj in objects)
                 message = f"Class names ({cn}) do not match the classes in the objects ({ocn})"
                 raise ValueError(message)
 

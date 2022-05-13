@@ -29,6 +29,26 @@ class TrackedObject:
         self.__class_name: Optional[str] = initial_detection.class_name
         self.__window_size: int = window_size
 
+    @property
+    def window_size(self) -> int:
+        return self.__window_size
+
+    @property
+    def class_name(self) -> Optional[str]:
+        return self.__class_name
+
+    @property
+    def frame_detections(self) -> List[DetectedObjectGroup]:
+        return list(self.__detection_by_frame)
+
+    @property
+    def frame_consensus(self) -> List[Optional[DetectedObject]]:
+        return [detection.object_group.create_consensus() for detection in self.__detection_by_frame]
+
+    @property
+    def last_frame_consensus(self) -> Optional[DetectedObject]:
+        return self.__detection_by_frame[-1].object_group.create_consensus()
+
     def advance_frame(self, to_num_frame: Optional[int] = None) -> None:
         last_num_frame = self.get_last_num_frame()
 
@@ -58,26 +78,6 @@ class TrackedObject:
             self.advance_frame(objects.num_frame - 1)
 
         self.__detection_by_frame.append(objects)
-
-    @property
-    def window_size(self) -> int:
-        return self.__window_size
-
-    @property
-    def class_name(self) -> Optional[str]:
-        return self.__class_name
-
-    @property
-    def frame_detections(self) -> List[DetectedObjectGroup]:
-        return list(self.__detection_by_frame)
-
-    @property
-    def frame_consensus(self) -> List[Optional[DetectedObject]]:
-        return [detection.object_group.create_consensus() for detection in self.__detection_by_frame]
-
-    @property
-    def last_frame_consensus(self) -> Optional[DetectedObject]:
-        return self.__detection_by_frame[-1].object_group.create_consensus()
 
     def has_object_detections(self) -> bool:
         return any(detection for detection in self.__detection_by_frame
