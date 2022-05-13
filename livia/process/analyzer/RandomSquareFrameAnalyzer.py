@@ -1,4 +1,5 @@
 import random
+from logging import Logger
 from typing import Tuple
 
 from numpy import ndarray
@@ -6,6 +7,7 @@ from numpy import ndarray
 from livia.livia_property import livia_property
 from livia.process.analyzer.CompositeFrameAnalyzer import CompositeFrameAnalyzer
 from livia.process.analyzer.FrameAnalyzer import FrameAnalyzer
+from livia.process.analyzer.FrameAnalyzerManager import FrameAnalyzerManager
 from livia.process.analyzer.FrameAnalyzerMetadata import frame_analyzer
 from livia.process.analyzer.NoChangeFrameAnalyzer import NoChangeFrameAnalyzer
 from livia.process.analyzer.modification.FrameModification import FrameModification
@@ -29,6 +31,8 @@ class RandomSquareFrameAnalyzer(CompositeFrameAnalyzer):
         self.__box_size: int = box_size
         self.__box_color: Tuple[int, int, int] = box_color
 
+        self.__logger: Logger = FrameAnalyzerManager.get_logger_for(self)
+
     @livia_property(id="box-color", name="Box color", default_value=DEFAULT_BOX_COLOR)
     def box_color(self) -> Tuple[int, int, int]:
         """The color of the box painted"""
@@ -50,6 +54,9 @@ class RandomSquareFrameAnalyzer(CompositeFrameAnalyzer):
             self.__x = random.randint(0, width - self.__box_size)
 
             box = (self.__x, self.__y, self.__x + self.__box_size, self.__y + self.__box_size)
+
+            box_csv = ",".join(str(value) for value in box)
+            self.__logger.info(f"{num_frame},{box_csv}")
 
             return SingleBoxFrameModification(box, self.__box_color, self.__box_thickness)
 
