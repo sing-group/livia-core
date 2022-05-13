@@ -34,7 +34,7 @@ class ObjectLocation:
 
     @property
     def coords(self) -> Tuple[float, float, float, float]:
-        return self.x0, self.y0, self.x0, self.x1
+        return self.x0, self.y0, self.x1, self.y1
 
     @property
     def height(self) -> float:
