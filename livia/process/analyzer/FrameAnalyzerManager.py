@@ -1,7 +1,9 @@
+import logging
 import os
 import pkgutil
 from importlib import import_module
-from typing import List, Dict
+from logging import Logger
+from typing import List, Dict, Union, Type, Callable
 
 from livia import LIVIA_LOGGER
 from livia.process.analyzer.FrameAnalyzer import FrameAnalyzer
@@ -29,25 +31,29 @@ class FrameAnalyzerManager:
         raise ValueError(f"No analyzer found for id: {id}")
 
     @staticmethod
-    def get_metadata_for(class_instance_or_name) -> FrameAnalyzerMetadata:
-        if isinstance(class_instance_or_name, FrameAnalyzerMetadata):
-            analyzer_class = class_instance_or_name.analyzer_class
-        elif isinstance(class_instance_or_name, FrameAnalyzer):
-            analyzer_class = class_instance_or_name.__class__
-        else:
-            analyzer_class = class_instance_or_name
+    def get_metadata_for(
+            class_instance_or_name: Union[Type[FrameAnalyzer], FrameAnalyzerMetadata, FrameAnalyzer, str]
+    ) -> FrameAnalyzerMetadata:
+        return FrameAnalyzerManager.__get_metadata_by(
+            class_instance_or_name,
+            lambda metadata, identifier:
+                identifier == metadata.analyzer_class.__module__
+                or identifier == metadata.analyzer_class.__qualname__
+        )
 
-        if isinstance(analyzer_class, str):
-            for analyzer in FrameAnalyzerManager.list_analyzers():
-                if analyzer_class == analyzer.analyzer_class.__module__ \
-                    or analyzer.analyzer_class.__qualname__ == analyzer_class:
-                    return analyzer
-        else:
-            for analyzer in FrameAnalyzerManager.list_analyzers():
-                if analyzer.analyzer_class == analyzer_class:
-                    return analyzer
+    @staticmethod
+    def get_logger_for(
+            class_instance_name_or_analyzer_id: Union[Type[FrameAnalyzer], FrameAnalyzerMetadata, FrameAnalyzer, str]
+    ) -> Logger:
+        analyzer_metadata = FrameAnalyzerManager.__get_metadata_by(
+            class_instance_name_or_analyzer_id,
+            lambda metadata, identifier:
+                identifier == metadata.analyzer_class.__module__
+                or identifier == metadata.analyzer_class.__qualname__
+                or identifier == metadata.id
+        )
 
-        raise ValueError(f"No analyzer found for class or object: {class_instance_or_name}")
+        return logging.getLogger(analyzer_metadata.id)
 
     @staticmethod
     def load_module(module):
@@ -67,3 +73,26 @@ class FrameAnalyzerManager:
                 setattr(analyzer, prop.name, args[prop.name])
 
         return analyzer
+
+    @staticmethod
+    def __get_metadata_by(
+            class_instance_or_string: Union[Type[FrameAnalyzer], FrameAnalyzerMetadata, FrameAnalyzer, str],
+            string_matcher: Callable[[FrameAnalyzerMetadata, str], bool]
+    ) -> FrameAnalyzerMetadata:
+        if isinstance(class_instance_or_string, FrameAnalyzerMetadata):
+            analyzer_class = class_instance_or_string.analyzer_class
+        elif isinstance(class_instance_or_string, FrameAnalyzer):
+            analyzer_class = class_instance_or_string.__class__
+        else:
+            analyzer_class = class_instance_or_string
+
+        if isinstance(analyzer_class, str):
+            for analyzer in FrameAnalyzerManager.list_analyzers():
+                if string_matcher(analyzer, analyzer_class):
+                    return analyzer
+        else:
+            for analyzer in FrameAnalyzerManager.list_analyzers():
+                if analyzer.analyzer_class == analyzer_class:
+                    return analyzer
+
+        raise ValueError(f"No analyzer found for {class_instance_or_string}")
