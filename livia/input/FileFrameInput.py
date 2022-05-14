@@ -30,7 +30,7 @@ class FileFrameInput(OpenCVFrameInput, SeekableFrameInput):
         if self._capture.isOpened():
             with self._capture_lock:
                 if self._capture.isOpened():
-                    num_frame = self._capture.get(CAP_PROP_POS_FRAMES)
+                    num_frame = int(self._capture.get(CAP_PROP_POS_FRAMES))
                     ret, self._current_frame = self._capture.read()
 
                     if not ret:
