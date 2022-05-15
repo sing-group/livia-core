@@ -3,13 +3,14 @@ from typing import Tuple
 
 from numpy import ndarray
 
+from livia.benchmarking.TimeLogger import TimeLogger
 from livia.livia_property import livia_property
+from livia.process.analyzer import DEFAULT_BOX_COLOR, DEFAULT_BOX_THICKNESS
 from livia.process.analyzer.CompositeFrameAnalyzer import CompositeFrameAnalyzer
 from livia.process.analyzer.FrameAnalyzer import FrameAnalyzer
 from livia.process.analyzer.HasThreshold import HasThreshold
 from livia.process.analyzer.NoChangeFrameAnalyzer import NoChangeFrameAnalyzer
 from livia.process.analyzer.modification.FrameModification import FrameModification
-from livia.process.analyzer import DEFAULT_BOX_COLOR, DEFAULT_BOX_THICKNESS
 from livia.process.analyzer.object_detection.FrameObjectDetection import FrameObjectDetection
 from livia.process.analyzer.object_detection.ObjectDetectionFrameModification import ObjectDetectionFrameModification
 
@@ -32,6 +33,8 @@ class ObjectDetectorFrameAnalyzer(CompositeFrameAnalyzer, HasThreshold):
         self._box_thickness: int = box_thickness
         self._show_scores: bool = show_scores
         self._show_class_names: bool = show_class_names
+
+        self._tl_detect_objects: TimeLogger = TimeLogger("Detect objects", self)
 
     @livia_property(id="box-thickness", name="Box thickness", default_value=DEFAULT_BOX_THICKNESS)
     def box_thickness(self) -> int:
@@ -67,7 +70,10 @@ class ObjectDetectorFrameAnalyzer(CompositeFrameAnalyzer, HasThreshold):
 
     def _composite_analyze(self, num_frame: int, frame: ndarray,
                            child_modification: FrameModification) -> ObjectDetectionFrameModification:
-        return self._create_modification(self._detect_objects(num_frame, frame), child_modification)
+        with self._tl_detect_objects:
+            detected_objects = self._detect_objects(num_frame, frame)
+
+        return self._create_modification(detected_objects, child_modification)
 
     @abstractmethod
     def _detect_objects(self, num_frame: int, frame: ndarray) -> FrameObjectDetection:

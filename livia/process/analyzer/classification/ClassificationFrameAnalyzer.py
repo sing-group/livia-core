@@ -3,6 +3,7 @@ from typing import Tuple
 
 from numpy import ndarray
 
+from livia.benchmarking.TimeLogger import TimeLogger
 from livia.livia_property import livia_property
 from livia.process.analyzer.CompositeFrameAnalyzer import CompositeFrameAnalyzer
 from livia.process.analyzer.FrameAnalyzer import FrameAnalyzer
@@ -19,6 +20,7 @@ class ClassificationFrameAnalyzer(CompositeFrameAnalyzer):
         CompositeFrameAnalyzer.__init__(self, child)
 
         self._info_color: Tuple[int, int, int] = info_color
+        self._tl_classification: TimeLogger = TimeLogger("Classification", self)
 
     @livia_property(id="info-color", name="Information color", default_value=DEFAULT_TEXT_COLOR)
     def info_color(self) -> Tuple[int, int, int]:
@@ -30,7 +32,10 @@ class ClassificationFrameAnalyzer(CompositeFrameAnalyzer):
 
     def _composite_analyze(self, num_frame: int, frame: ndarray,
                            child_modification: FrameModification) -> FrameModification:
-        return self._create_modification(self._classify(num_frame, frame), child_modification)
+        with self._tl_classification:
+            classify = self._classify(num_frame, frame)
+
+        return self._create_modification(classify, child_modification)
 
     @abstractmethod
     def _classify(self, num_frame, frame: ndarray) -> Classification:
