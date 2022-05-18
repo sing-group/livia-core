@@ -74,6 +74,12 @@ class ObjectLocation:
         y1 = int(y_adjustment(self.__y1))
         return (y0, x0, y1, x1) if reverse else (x0, y0, x1, y1)
 
+    def adjusted(self,
+                 x_adjustment: Callable[[float], float] = lambda x: x,
+                 y_adjustment: Callable[[float], float] = lambda y: y,
+                 reverse: bool = False) -> "ObjectLocation":
+        return ObjectLocation(*self.adjust_coords(x_adjustment, y_adjustment, reverse))
+
     def calculate_iou(self, location: "ObjectLocation") -> float:
         x0 = max(self.x0, location.x0)
         y0 = max(self.y0, location.y0)

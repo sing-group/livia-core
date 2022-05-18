@@ -2,6 +2,7 @@ from collections import deque, Counter
 from copy import deepcopy, copy
 from typing import Deque, List, Optional, Union, Iterable
 
+from livia.process.analyzer import DEFAULT_WINDOW_SIZE
 from livia.process.analyzer.object_detection.DetectedObject import DetectedObject
 from livia.process.analyzer.object_tracking.DetectedObjectGroup import DetectedObjectGroup
 from livia.process.analyzer.object_tracking.FrameDetectedObjectGroup import FrameDetectedObjectGroup
@@ -12,7 +13,10 @@ _EMPTY_DETECTED_OBJECT_GROUP: DetectedObjectGroup = DetectedObjectGroup()
 class TrackedObject:
     def __init__(self,
                  initial_detection: Union[FrameDetectedObjectGroup, Iterable[FrameDetectedObjectGroup]],
-                 window_size: int):
+                 window_size: int = DEFAULT_WINDOW_SIZE):
+        if window_size <= 0:
+            raise ValueError("window_size must be a positive number")
+
         if isinstance(initial_detection, Iterable):
             if len(initial_detection) == 0:
                 raise ValueError("At least one object group must be provided")
@@ -33,12 +37,21 @@ class TrackedObject:
     def window_size(self) -> int:
         return self.__window_size
 
+    @window_size.setter
+    def window_size(self, window_size: int = DEFAULT_WINDOW_SIZE):
+        if self.__window_size != window_size:
+            if window_size <= 0:
+                raise ValueError("window_size must be a positive number")
+
+            self.__window_size = window_size
+            self.__detection_by_frame = deque(self.__detection_by_frame, window_size)
+
     @property
     def class_name(self) -> Optional[str]:
         return self.__class_name
 
     @property
-    def frame_detections(self) -> List[DetectedObjectGroup]:
+    def frame_detections(self) -> List[FrameDetectedObjectGroup]:
         return list(self.__detection_by_frame)
 
     @property
@@ -97,7 +110,7 @@ class TrackedObject:
 
     def count_object_detections(self) -> int:
         return len([detection for detection in self.__detection_by_frame if
-                   detection.object_group != _EMPTY_DETECTED_OBJECT_GROUP])
+                    detection.object_group != _EMPTY_DETECTED_OBJECT_GROUP])
 
     def __copy__(self):
         return TrackedObject(

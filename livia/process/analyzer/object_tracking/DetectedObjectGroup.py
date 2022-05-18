@@ -26,6 +26,9 @@ class DetectedObjectGroup:
     def class_name(self) -> Optional[str]:
         return self.__class_name
 
+    def has_detections(self) -> bool:
+        return len(self.__objects) > 0
+
     def create_consensus(self) -> Optional[DetectedObject]:
         count_objects = len(self.__objects)
 
@@ -39,7 +42,7 @@ class DetectedObjectGroup:
 
             location = self.__objects[0].location
             for i in range(1, len(self.__objects)):
-                location = location.create_intersection(self.__objects[i].location)
+                location = location.create_union_rectangle(self.__objects[i].location)
 
             return DetectedObject(location, self.class_name, mean_score)
 

@@ -1,19 +1,40 @@
 from copy import deepcopy, copy
 from typing import Set, Callable, List, Tuple, Optional, Union, Iterable, FrozenSet
 
+from livia.process.analyzer import DEFAULT_WINDOW_SIZE
 from livia.process.analyzer.object_tracking.DetectedObjectGroup import DetectedObjectGroup
 from livia.process.analyzer.object_tracking.FrameDetectedObjectGroup import FrameDetectedObjectGroup
 from livia.process.analyzer.object_tracking.TrackedObject import TrackedObject
 
 
 class TrackedObjects:
-    def __init__(self, tracked_objects: Iterable[TrackedObject] = set(), window_size: int = 50):
+    def __init__(self, tracked_objects: Iterable[TrackedObject] = set(), window_size: int = DEFAULT_WINDOW_SIZE):
+        if window_size <= 0:
+            raise ValueError("window_size must be a positive number")
+
         self.__tracked_objects: Set[TrackedObject] = set(tracked_objects)
         self.__window_size: int = window_size
+
+        for tracked_object in self.__tracked_objects:
+            tracked_object.window_size = window_size
 
     @property
     def tracked_objects(self) -> FrozenSet[TrackedObject]:
         return frozenset(self.__tracked_objects)
+
+    @property
+    def window_size(self) -> int:
+        return self.__window_size
+
+    @window_size.setter
+    def window_size(self, window_size: int = DEFAULT_WINDOW_SIZE):
+        if self.__window_size != window_size:
+            if window_size <= 0:
+                raise ValueError("window_size must be a positive number")
+
+            self.__window_size = window_size
+            for tracked_object in self.__tracked_objects:
+                tracked_object.window_size = window_size
 
     def add(self, tracked_object: TrackedObject) -> None:
         self.__tracked_objects.add(tracked_object)

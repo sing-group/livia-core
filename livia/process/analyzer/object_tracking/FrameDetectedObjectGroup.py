@@ -20,11 +20,14 @@ class FrameDetectedObjectGroup:
 
     @property
     def detected_objects(self) -> List[DetectedObject]:
-        return self.__object_group.detected_objects.copy()
+        return self.__object_group.detected_objects
 
     @property
     def object_group(self) -> DetectedObjectGroup:
         return self.__object_group
+
+    def has_detections(self):
+        return self.__object_group.has_detections()
 
     def __copy__(self):
         return self
