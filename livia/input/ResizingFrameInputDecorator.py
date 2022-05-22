@@ -36,5 +36,5 @@ class ResizingFrameInputDecorator(FrameInputDecorator):
         return self.__size
 
     def __resize(self, image: ndarray) -> ndarray:
-        resized_image = image[self.__x_0:self.__x_1, self.__y_0:self.__y_1]
+        resized_image = image[self.__y_0:self.__y_1, self.__x_0:self.__x_1]
         return resized_image if resized_image.flags['C_CONTIGUOUS'] else ascontiguousarray(resized_image)
