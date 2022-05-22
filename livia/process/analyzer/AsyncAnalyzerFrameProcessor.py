@@ -1,8 +1,10 @@
+import time
 from threading import Thread, Lock, Condition
 
 from numpy import ndarray
 from typing import Optional, Tuple, List
 
+from livia.benchmarking.TimeLogger import TimeLogger
 from livia.input.FrameInput import FrameInput
 from livia.output.FrameOutput import FrameOutput
 from livia.process.analyzer.AnalyzerFrameProcessor import AnalyzerFrameProcessor
@@ -20,10 +22,15 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
                  frame_analyzer: FrameAnalyzer,
                  modification_persistence: int = DEFAULT_MODIFICATION_PERSISTENCE,
                  num_threads: int = DEFAULT_NUM_THREADS,
-                 daemon: bool = True):
+                 daemon: bool = True,
+                 delay: Optional[float] = None):
         super().__init__(input, output, frame_analyzer, daemon)
 
+        if delay is not None and delay < 0:
+            raise ValueError("delay must be None or a non negative float")
+
         self._analyzer_thread: List[Optional[Thread]] = [None] * num_threads
+        self._delay: Optional[float] = delay
 
         self._modification_persistence: int = modification_persistence
 
@@ -34,6 +41,8 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
         self._current_modification_lock: Lock = Lock()
         self._current_frame_condition: Condition = Condition(lock=Lock())
 
+        self._tl_analyze_frame: TimeLogger = TimeLogger("Analyze Cycle", self.__class__.__name__)
+
     @AnalyzerFrameProcessor.frame_analyzer.setter
     def frame_analyzer(self, frame_analyzer: FrameAnalyzer):
         if self._frame_analyzer != frame_analyzer:
@@ -41,9 +50,15 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
                 AnalyzerFrameProcessor.frame_analyzer.fset(self, frame_analyzer)
 
     def _process_frame(self, frame: ndarray):
+        # Frame is copied to prevent analyzers from analyzing manipulated frames
+        frame_copy = frame.copy()
+
         with self._current_frame_condition:
-            self._current_frame = [self._num_frame, frame]
+            self._current_frame = [self._num_frame, frame_copy]
             self._current_frame_condition.notify()
+
+        if self._delay is not None:
+            time.sleep(self._delay)
 
         super()._process_frame(frame)
 
@@ -86,19 +101,20 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
                 frame = self._current_frame
                 self._current_frame = None
 
-            with self._frame_analyzer_lock:
-                frame_analyzer = self._frame_analyzer
+            with self._tl_analyze_frame:
+                with self._frame_analyzer_lock:
+                    frame_analyzer = self._frame_analyzer
 
-            if self._alive:
-                modification = frame_analyzer.analyze(*frame)
-            else:
-                break
+                if self._alive:
+                    modification = frame_analyzer.analyze(*frame)
+                else:
+                    break
 
-            if self._alive:
-                with self._current_modification_lock:
-                    self._current_modification = [modification, 0]
-            else:
-                break
+                if self._alive:
+                    with self._current_modification_lock:
+                        self._current_modification = [modification, 0]
+                else:
+                    break
 
         for i in range(0, len(self._analyzer_thread)):
             self._analyzer_thread[i] = None
