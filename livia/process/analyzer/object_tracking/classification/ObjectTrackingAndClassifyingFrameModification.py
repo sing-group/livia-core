@@ -20,6 +20,7 @@ class ObjectTrackingAndClassifyingFrameModification(CompositeFrameModification):
                  box_thickness: int = DEFAULT_BOX_THICKNESS,
                  show_score: bool = DEFAULT_SHOW_SCORE,
                  show_class_name: bool = DEFAULT_SHOW_CLASS_NAME,
+                 text_color: Optional[Tuple[int, int, int]] = None,
                  child: FrameModification = NoFrameModification()):
         super().__init__(child)
 
@@ -28,6 +29,7 @@ class ObjectTrackingAndClassifyingFrameModification(CompositeFrameModification):
         self._box_thickness: int = box_thickness
         self._show_score: bool = show_score
         self._show_class_name: bool = show_class_name
+        self._text_color: Optional[Tuple[int, int, int]] = text_color
 
     def _composite_modify(self, num_frame: int, frame: ndarray) -> ndarray:
         if self._classifications is not None:
@@ -45,7 +47,7 @@ class ObjectTrackingAndClassifyingFrameModification(CompositeFrameModification):
             class_name = None
             score = None
 
-        location = detected_object.location
+        location = detected_object.location.adjust_to_box((0, 0, frame.shape[1] - 1, frame.shape[0] - 1))
 
         color = [255, 0, 0] if score is None else [0, round(255 * (1 - score)), round(255 * score)]
 
@@ -59,8 +61,7 @@ class ObjectTrackingAndClassifyingFrameModification(CompositeFrameModification):
             label = class_name if label is None else f"{class_name}: {label}"
 
         if label is not None:
+            color = self._text_color if self._text_color is not None else color
+
             cv2.putText(frame, label, location.adjust_coord0(lambda x: x + 20, lambda y: y + 20),
-                        fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL,
-                        fontScale=1,
-                        color=color,
-                        thickness=1)
+                        fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale=1, color=color, thickness=1)

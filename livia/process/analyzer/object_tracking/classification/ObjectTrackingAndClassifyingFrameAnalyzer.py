@@ -20,6 +20,7 @@ from livia.process.analyzer.object_tracking.classification.ObjectTrackingAndClas
     ObjectTrackingAndClassifyingFrameModification
 
 T = TypeVar("T")
+DEFAULT_TEXT_COLOR: Optional[Tuple[int, int, int]] = None
 
 
 class ObjectTrackingAndClassifyingFrameAnalyzer(CompositeFrameAnalyzer, ABC, Generic[T]):
@@ -27,6 +28,7 @@ class ObjectTrackingAndClassifyingFrameAnalyzer(CompositeFrameAnalyzer, ABC, Gen
             self,
             window_size: int = DEFAULT_WINDOW_SIZE,
             box_color: Tuple[int, int, int] = DEFAULT_BOX_COLOR,
+            text_color: Optional[Tuple[int, int, int]] = DEFAULT_TEXT_COLOR,
             box_thickness: int = DEFAULT_BOX_THICKNESS,
             show_scores: bool = False,
             show_class_names: bool = False,
@@ -38,6 +40,7 @@ class ObjectTrackingAndClassifyingFrameAnalyzer(CompositeFrameAnalyzer, ABC, Gen
         CompositeFrameAnalyzer.__init__(self, child)
 
         self._box_color: Tuple[int, int, int] = box_color
+        self._text_color: Optional[Tuple[int, int, int]] = text_color
         self._box_thickness: int = box_thickness
         self._show_scores: bool = show_scores
         self._show_class_names: bool = show_class_names
@@ -46,7 +49,6 @@ class ObjectTrackingAndClassifyingFrameAnalyzer(CompositeFrameAnalyzer, ABC, Gen
         self._tracked_objects: TrackedObjects = TrackedObjects(window_size=self._window_size)
 
         self._tl_process_frame = TimeLogger("Process frame", self)
-
         self._tl_preprocess_frame = TimeLogger("Preprocess frame", self)
         self._tl_tracking = TimeLogger("Tracking", self)
         self._tl_classify = TimeLogger("Classify", self)

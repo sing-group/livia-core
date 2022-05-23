@@ -16,7 +16,7 @@ class DetectedObjectGroup:
                 raise ValueError("Objects must have the same class")
 
             self.__objects: List[DetectedObject] = list(objects)
-            self.__class_name: str = objects[0].class_name
+            self.__class_name: str = self.__objects[0].class_name
 
     @property
     def detected_objects(self) -> List[DetectedObject]:

@@ -4,7 +4,7 @@ from typing import Set, Callable, List, Tuple, Optional, Union, Iterable, Frozen
 from livia.process.analyzer import DEFAULT_WINDOW_SIZE
 from livia.process.analyzer.object_tracking.DetectedObjectGroup import DetectedObjectGroup
 from livia.process.analyzer.object_tracking.FrameDetectedObjectGroup import FrameDetectedObjectGroup
-from livia.process.analyzer.object_tracking.TrackedObject import TrackedObject
+from livia.process.analyzer.object_tracking.TrackedObject import TrackedObject, MissingFrameFillingMethod
 
 
 class TrackedObjects:
@@ -68,7 +68,7 @@ class TrackedObjects:
                 tracked_objects_to_update.remove(tracked_object)
 
         for tracked_object in tracked_objects_to_update:
-            tracked_object.advance_frame()
+            tracked_object.advance_frame(num_frame, MissingFrameFillingMethod.LAST_NOT_DETECTED)
 
             if callable(remove_invalid) and remove_invalid(tracked_object):
                 self.__tracked_objects.remove(tracked_object)
@@ -86,3 +86,8 @@ class TrackedObjects:
             deepcopy(self.__tracked_objects),
             self.__window_size
         )
+
+    def __str__(self):
+        return "\n".join(str(tracked_object)
+                         for tracked_object
+                         in sorted(self.__tracked_objects, key=lambda to: to.id))

@@ -80,6 +80,12 @@ class ObjectLocation:
                  reverse: bool = False) -> "ObjectLocation":
         return ObjectLocation(*self.adjust_coords(x_adjustment, y_adjustment, reverse))
 
+    def adjust_to_box(self, box: Tuple[int, int, int, int]) -> "ObjectLocation":
+        return self.adjusted(
+            lambda x: max(box[0], min(box[2], x)),
+            lambda y: max(box[1], min(box[3], y))
+        )
+    
     def calculate_iou(self, location: "ObjectLocation") -> float:
         x0 = max(self.x0, location.x0)
         y0 = max(self.y0, location.y0)
