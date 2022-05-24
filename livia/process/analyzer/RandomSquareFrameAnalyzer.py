@@ -55,8 +55,10 @@ class RandomSquareFrameAnalyzer(CompositeFrameAnalyzer):
 
             box = (self.__x, self.__y, self.__x + self.__box_size, self.__y + self.__box_size)
 
-            box_csv = ",".join(str(value) for value in box)
-            self.__logger.info(f"{num_frame},{box_csv}")
+            # Tip: use a log format string like %(num_frame)d,%(box_x0)d,%(box_y0)d,%(box_x1)d,%(box_y1)d
+            # to get CSV output from these log records
+            self.__logger.info("Frame modification shown",
+                               extra={"num_frame": num_frame, "box_x0": box[0], "box_y0": box[1], "box_x1": box[2],
+                                      "box_y1": box[3]})
 
             return SingleBoxFrameModification(box, self.__box_color, self.__box_thickness)
-
