@@ -21,7 +21,7 @@ class AnalyzerFrameProcessor(FrameProcessor):
         if self._num_frame is None:
             raise RuntimeError("self._num_frame should not be None")
 
-        modification = self._frame_analyzer.analyze(self._num_frame, frame)
+        modification = self._frame_analyzer.analyze(self._num_frame, frame.copy())
 
         return modification.modify(self._num_frame, frame)
 
