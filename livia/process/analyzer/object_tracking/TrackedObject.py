@@ -88,7 +88,7 @@ class TrackedObject:
 
     @property
     def last_frame_consensus(self) -> Optional[DetectedObject]:
-        return self.__detection_by_frame[-1].object_group.create_consensus()
+        return self.__detection_by_frame[-1][0].object_group.create_consensus()
 
     def __has_detection(
             self, group: Union[FrameDetectedObjectGroup, Tuple[FrameDetectedObjectGroup, Dict[str, Any]]]
