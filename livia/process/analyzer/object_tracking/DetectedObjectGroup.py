@@ -27,7 +27,10 @@ class DetectedObjectGroup:
         return self.__class_name
 
     def has_detections(self) -> bool:
-        return len(self.__objects) > 0
+        return self.count_detections() > 0
+
+    def count_detections(self) -> int:
+        return len(self.__objects)
 
     def create_consensus(self) -> Optional[DetectedObject]:
         count_objects = len(self.__objects)

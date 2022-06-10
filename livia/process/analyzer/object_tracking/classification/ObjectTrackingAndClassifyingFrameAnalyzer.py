@@ -1,5 +1,9 @@
+import logging
+import math
+import time
 from abc import ABC, abstractmethod
 from copy import copy
+from logging import Logger
 from typing import List, Tuple, Optional, TypeVar, Generic
 
 from numpy import ndarray
@@ -9,6 +13,7 @@ from livia.livia_property import livia_property
 from livia.process.analyzer import DEFAULT_WINDOW_SIZE, DEFAULT_BOX_COLOR, DEFAULT_BOX_THICKNESS
 from livia.process.analyzer.CompositeFrameAnalyzer import CompositeFrameAnalyzer
 from livia.process.analyzer.FrameAnalyzer import FrameAnalyzer
+from livia.process.analyzer.FrameAnalyzerManager import FrameAnalyzerManager
 from livia.process.analyzer.NoChangeFrameAnalyzer import NoChangeFrameAnalyzer
 from livia.process.analyzer.modification.FrameModification import FrameModification
 from livia.process.analyzer.object_detection.DetectedObject import DetectedObject
@@ -57,6 +62,9 @@ class ObjectTrackingAndClassifyingFrameAnalyzer(CompositeFrameAnalyzer, ABC, Gen
         self._tl_detect_objects = TimeLogger("Detect objects", self)
         self._tl_group_intra_frame = TimeLogger("Group intra frame", self)
         self._tl_group_inter_frame = TimeLogger("Group inter frame", self)
+
+        self._logger: Logger = FrameAnalyzerManager.get_logger_for(self)
+        self._log_headers()
 
     @livia_property(id="window-size", name="Window size", default_value=DEFAULT_WINDOW_SIZE)
     def window_size(self) -> int:
@@ -115,6 +123,8 @@ class ObjectTrackingAndClassifyingFrameAnalyzer(CompositeFrameAnalyzer, ABC, Gen
             with self._tl_classify:
                 classification = self._classify_objects(num_frame, preprocessed_frame, tracked_objects)
 
+            self._log_classification(num_frame, classification)
+
             with self._tl_build_modification:
                 return self.build_modification(num_frame, frame, tracked_objects, classification, child_modification)
 
@@ -125,14 +135,82 @@ class ObjectTrackingAndClassifyingFrameAnalyzer(CompositeFrameAnalyzer, ABC, Gen
         with self._tl_detect_objects:
             objects_in_frame = self._detect_objects_in_frame(num_frame, frame)
 
+        self._log_detected_objects_in_frame(num_frame, objects_in_frame)
+
         with self._tl_group_intra_frame:
             intra_frame_detections = self._group_intra_frame_objects(num_frame, objects_in_frame)
+
+        self._log_group_intra_frame_objects(num_frame, intra_frame_detections)
 
         with self._tl_group_inter_frame:
             tracked_objects = self._tracked_objects if update else copy(self._tracked_objects)
             tracked_objects = self._group_inter_frame_objects(num_frame, intra_frame_detections, tracked_objects)
 
+        self._log_tracked_objects(num_frame, tracked_objects)
+
         return tracked_objects
+
+    def _log_headers(self) -> None:
+        if self._logger.isEnabledFor(logging.INFO):
+            self._logger.info("object detection format,time,num frame,x0,y0,x1,y1,class,score")
+            self._logger.info("intra frame group format,time,num frame,x0,y0,x1,y1,objects count,class,score")
+            self._logger.info("tracked objects format,time,num frame,id,x0,y0,x1,y1,count frames,"
+                              "count object detections,count frames not processed,count frames w/o detections,class,"
+                              "score")
+            self._logger.info("classification format,time,num frame,id,x0,y0,x1,y1,class,score")
+
+    def _log_detected_objects_in_frame(self, num_frame: int, objects_in_frame: FrameObjectDetection) -> None:
+        if self._logger.isEnabledFor(logging.INFO):
+            for detected_object in objects_in_frame.objects:
+                location = detected_object.location
+                self._logger.info("object detection,%.8f,%d,%d,%d,%d,%d,%s,%.8f",
+                                  time.time(), num_frame,
+                                  location.x0, location.y0, location.x1, location.y1,
+                                  "" if detected_object.class_name is None else detected_object.class_name,
+                                  math.nan if detected_object.score is None else detected_object.score)
+
+    def _log_group_intra_frame_objects(self, num_frame: int, intra_frame_detections: FrameDetectedObjectGroups) -> None:
+        if self._logger.isEnabledFor(logging.INFO):
+            for group in intra_frame_detections.groups:
+                consensus = group.create_consensus()
+                location = consensus.location
+                self._logger.info("intra frame group,%.8f,%d,%d,%d,%d,%d,%d,%s,%.8f",
+                                  time.time(), num_frame,
+                                  location.x0, location.y0, location.x1, location.y1,
+                                  group.count_detections(),
+                                  "" if consensus.class_name is None else consensus.class_name,
+                                  math.nan if consensus.score is None else consensus.score)
+
+    def _log_tracked_objects(self, num_frame: int, tracked_objects: TrackedObjects) -> None:
+        if self._logger.isEnabledFor(logging.INFO):
+            for tracked_object in tracked_objects.tracked_objects:
+                consensus = tracked_object.last_frame_consensus
+                if consensus is not None:
+                    location = consensus.location
+                    self._logger.info("tracked objects,%.8f,%d,%s,%d,%d,%d,%d,%d,%d,%d,%d,%s,%.8f",
+                                      time.time(), num_frame, tracked_object.id,
+                                      location.x0, location.y0, location.x1, location.y1,
+                                      tracked_object.count_frames(),
+                                      tracked_object.count_object_detections(),
+                                      tracked_object.count_frames_not_processed(),
+                                      tracked_object.count_frames_without_detection(),
+                                      "" if consensus.class_name is None else consensus.class_name,
+                                      math.nan if consensus.score is None else consensus.score)
+
+    def _log_classification(
+            self, num_frame: int,
+            classifications: List[Tuple[TrackedObject, DetectedObject, Optional[Tuple[Optional[str], Optional[float]]]]]
+    ) -> None:
+        if self._logger.isEnabledFor(logging.INFO):
+            for classification in classifications:
+                tracked_object, detected_object, class_and_score = classification
+                location = detected_object.location
+
+                self._logger.info("classifications,%.8f,%d,%s,%d,%d,%d,%d,%s,%.8f",
+                                  time.time(), num_frame, tracked_object.id,
+                                  location.x0, location.y0, location.x1, location.y1,
+                                  "" if class_and_score[0] is None else class_and_score[0],
+                                  math.nan if class_and_score[1] is None else class_and_score[1])
 
     @abstractmethod
     def _detect_objects_in_frame(self, num_frame: int, frame: T) -> FrameObjectDetection:
