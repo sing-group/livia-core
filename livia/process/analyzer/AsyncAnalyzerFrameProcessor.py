@@ -1,13 +1,14 @@
 import time
 from threading import Thread, Lock, Condition
+from typing import Optional, Tuple, List
 
 from numpy import ndarray
-from typing import Optional, Tuple, List
 
 from livia.benchmarking.TimeLogger import TimeLogger
 from livia.input.FrameInput import FrameInput
 from livia.output.FrameOutput import FrameOutput
 from livia.process.analyzer.AnalyzerFrameProcessor import AnalyzerFrameProcessor
+from livia.process.analyzer.AreaOfInterest import AreaOfInterest
 from livia.process.analyzer.FrameAnalyzer import FrameAnalyzer
 from livia.process.analyzer.modification.FrameModification import FrameModification
 
@@ -20,11 +21,12 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
                  input: FrameInput,
                  output: FrameOutput,
                  frame_analyzer: FrameAnalyzer,
+                 area_of_interest: Optional[AreaOfInterest] = None,
                  modification_persistence: int = DEFAULT_MODIFICATION_PERSISTENCE,
                  num_threads: int = DEFAULT_NUM_THREADS,
                  daemon: bool = True,
                  delay: Optional[float] = None):
-        super().__init__(input, output, frame_analyzer, daemon)
+        super().__init__(input, output, frame_analyzer, area_of_interest, daemon)
 
         if delay is not None and delay < 0:
             raise ValueError("delay must be None or a non negative float")
@@ -35,6 +37,7 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
         self._modification_persistence: int = modification_persistence
 
         self._current_frame: Optional[Tuple[Optional[int], Optional[ndarray]]] = None
+        self._current_area_of_interest: Optional[ndarray] = None
         self._current_modification: Optional[Tuple[FrameModification, int]] = None
 
         self._frame_analyzer_lock: Lock = Lock()
@@ -55,6 +58,8 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
 
         with self._current_frame_condition:
             self._current_frame = [self._num_frame, frame_copy]
+            if self._has_area_of_interest():
+                self._current_area_of_interest = self._area_of_interest.extract_from(frame_copy)
             self._current_frame_condition.notify()
 
         if self._delay is not None:
@@ -74,7 +79,16 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
                 else:
                     modification[1] += 1
 
-        return modification[0].modify(self._num_frame, frame) if modification is not None else frame
+        if modification is None:
+            return frame
+        else:
+            if self._has_area_of_interest():
+                frame_aoi = self._area_of_interest.extract_from(frame)
+                frame_aoi = modification[0].modify(self._num_frame, frame_aoi)
+
+                return self._area_of_interest.replace_on(frame, frame_aoi)
+            else:
+                return modification[0].modify(self._num_frame, frame)
 
     def _on_start(self):
         if self._analyzer_thread[0] is None:
@@ -99,6 +113,7 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
                 if self._current_frame is None:
                     self._current_frame_condition.wait()
                 frame = self._current_frame
+                aoi = self._current_area_of_interest
                 self._current_frame = None
 
             with self._tl_analyze_frame:
@@ -106,7 +121,11 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
                     frame_analyzer = self._frame_analyzer
 
                 if self._alive:
-                    modification = frame_analyzer.analyze(*frame)
+                    if self._has_area_of_interest():
+                        num_frame, _ = frame
+                        modification = frame_analyzer.analyze(num_frame, aoi)
+                    else:
+                        modification = frame_analyzer.analyze(*frame)
                 else:
                     break
 
