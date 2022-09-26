@@ -55,8 +55,6 @@ class AreaOfInterest:
         return frame_aoi if frame_aoi.flags['C_CONTIGUOUS'] else ascontiguousarray(frame_aoi)
 
     def replace_on(self, frame: ndarray, aoi: ndarray) -> ndarray:
-        for x in range(self.x0, self.x1 + 1):
-            for y in range(self.y0, self.y1 + 1):
-                frame[y, x] = aoi[y - self.y, x - self.x]
+        frame[self.y0:self.y1 + 1, self.x0:self.x1 + 1] = aoi
 
         return frame
