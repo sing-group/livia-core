@@ -7,7 +7,7 @@ from numpy import ndarray
 from livia.benchmarking.TimeLogger import TimeLogger
 from livia.input.FrameInput import FrameInput
 from livia.output.FrameOutput import FrameOutput
-from livia.process.analyzer.AnalyzerFrameProcessor import AnalyzerFrameProcessor
+from livia.process.analyzer.AnalyzerFrameProcessor import AnalyzerFrameProcessor, DEFAULT_FRAME_RATIO
 from livia.process.analyzer.AreaOfInterest import AreaOfInterest
 from livia.process.analyzer.FrameAnalyzer import FrameAnalyzer
 from livia.process.analyzer.modification.FrameModification import FrameModification
@@ -24,9 +24,10 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
                  area_of_interest: Optional[AreaOfInterest] = None,
                  modification_persistence: int = DEFAULT_MODIFICATION_PERSISTENCE,
                  num_threads: int = DEFAULT_NUM_THREADS,
+                 frame_ratio: int = DEFAULT_FRAME_RATIO,
                  daemon: bool = True,
                  delay: Optional[float] = None):
-        super().__init__(input, output, frame_analyzer, area_of_interest, daemon)
+        super().__init__(input, output, frame_analyzer, area_of_interest, frame_ratio, daemon)
 
         if delay is not None and delay < 0:
             raise ValueError("delay must be None or a non negative float")
@@ -53,14 +54,15 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
                 AnalyzerFrameProcessor.frame_analyzer.fset(self, frame_analyzer)
 
     def _process_frame(self, frame: ndarray):
-        # Frame is copied to prevent analyzers from analyzing manipulated frames
-        frame_copy = frame.copy()
+        if self._num_frame % self._frame_ratio == 0:
+            # Frame is copied to prevent analyzers from analyzing manipulated frames
+            frame_copy = frame.copy()
 
-        with self._current_frame_condition:
-            self._current_frame = [self._num_frame, frame_copy]
-            if self._has_area_of_interest():
-                self._current_area_of_interest = self._area_of_interest.extract_from(frame_copy)
-            self._current_frame_condition.notify()
+            with self._current_frame_condition:
+                self._current_frame = [self._num_frame // self._frame_ratio, frame_copy]
+                if self._has_area_of_interest():
+                    self._current_area_of_interest = self._area_of_interest.extract_from(frame_copy)
+                self._current_frame_condition.notify()
 
         if self._delay is not None:
             time.sleep(self._delay)
@@ -84,11 +86,11 @@ class AsyncAnalyzerFrameProcessor(AnalyzerFrameProcessor):
         else:
             if self._has_area_of_interest():
                 frame_aoi = self._area_of_interest.extract_from(frame)
-                frame_aoi = modification[0].modify(self._num_frame, frame_aoi)
+                frame_aoi = modification[0].modify(self._num_frame // self._frame_ratio, frame_aoi)
 
                 return self._area_of_interest.replace_on(frame, frame_aoi)
             else:
-                return modification[0].modify(self._num_frame, frame)
+                return modification[0].modify(self._num_frame // self._frame_ratio, frame)
 
     def _on_start(self):
         if self._analyzer_thread[0] is None:

@@ -257,7 +257,7 @@ class TrackedObject:
             if detection.object_group == _NOT_DETECTED_OBJECT_GROUP:
                 return "╳"
             elif detection.object_group == _NOT_PROCESSED_OBJECT_GROUP:
-                return "░"
+                return "_"
             elif len(metadata) > 0:
                 return "█"
             else:
